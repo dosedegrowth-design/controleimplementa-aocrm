@@ -116,10 +116,11 @@ export function KanbanBoard({ unidades, etapas, onSelectUnidade }: KanbanBoardPr
         }).length;
 
         return (
-          <div key={key} className="flex flex-col min-h-[300px]">
-            <div className="px-3 py-2 mb-2 bg-[#1B2A4A] text-white rounded-md flex items-center justify-between sticky top-0 z-10">
-              <div className="flex flex-col">
-                <span className="text-[10px] font-bold uppercase tracking-wider opacity-80">
+          <div key={key} className="flex flex-col bg-slate-50 rounded-lg border border-slate-200 overflow-hidden h-[640px]">
+            {/* Header fixo */}
+            <div className="px-3 py-2 bg-[#1B2A4A] text-white flex items-center justify-between shrink-0">
+              <div className="flex flex-col min-w-0">
+                <span className="text-[10px] font-bold uppercase tracking-wider opacity-80 truncate">
                   {ETAPA_LABELS[key]}
                 </span>
                 <span className="text-[10px] opacity-60">
@@ -129,14 +130,15 @@ export function KanbanBoard({ unidades, etapas, onSelectUnidade }: KanbanBoardPr
                   {lista.length} unid.
                 </span>
               </div>
-              <span className="bg-[#E31E24] text-white text-xs font-bold px-2 py-0.5 rounded-full">
+              <span className="bg-[#E31E24] text-white text-xs font-bold px-2 py-0.5 rounded-full shrink-0">
                 {lista.length}
               </span>
             </div>
 
-            <div className="space-y-2 flex-1">
+            {/* Lista com scroll interno isolado */}
+            <div className="flex-1 overflow-y-auto p-2 space-y-2 kanban-column-scroll">
               {lista.length === 0 ? (
-                <div className="text-center text-xs text-slate-400 py-6 italic border border-dashed border-slate-200 rounded">
+                <div className="text-center text-xs text-slate-400 py-6 italic border border-dashed border-slate-300 rounded bg-white">
                   vazio
                 </div>
               ) : (
