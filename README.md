@@ -1,36 +1,92 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Controle CRM SuperVisão
 
-## Getting Started
+Painel de controle de implantação do CRM (Chatwoot) por unidade da rede SuperVisão.
+Alimentado automaticamente por um Google Form, com checklist de etapas, gestão de agentes, relatórios e controle de acesso.
 
-First, run the development server:
+📄 **Documentação completa de regras e lógica**: [`REGRAS_E_LOGICA.md`](./REGRAS_E_LOGICA.md)
+
+## Stack
+
+- **Frontend**: Next.js 16 (App Router) + TypeScript + Tailwind v4
+- **UI**: shadcn-style + Radix + Lucide + Framer Motion
+- **Banco**: Supabase Postgres (schema `crm_onboarding`)
+- **Auth**: Supabase Auth (email + senha)
+- **Sync**: Supabase Edge Function Deno (Google Sheets API)
+- **Deploy**: Vercel + GitHub
+
+## Quickstart
 
 ```bash
+npm install
+cp .env.local.example .env.local
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abra http://localhost:3000 e faça login.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Estrutura
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+crm-supervisao/
+├── app/
+│   ├── (app)/                  # rotas autenticadas (Visão Geral, Unidades, Relatórios, Config)
+│   ├── api/                    # API Routes (sync trigger, usuários CRUD)
+│   ├── login/
+│   ├── globals.css             # Design system SuperVisão
+│   └── layout.tsx
+├── components/
+│   ├── ui/                     # primitives (button, card, input...)
+│   ├── sidebar.tsx
+│   ├── sync-button.tsx
+│   ├── kpi-card.tsx
+│   ├── funil-etapas.tsx
+│   └── status-badge.tsx
+├── lib/
+│   ├── supabase/               # client + server + middleware
+│   ├── types.ts                # tipos do schema
+│   └── utils.ts                # helpers
+├── supabase/
+│   ├── migrations/             # SQL do schema crm_onboarding
+│   └── functions/
+│       └── crm-sync-form-to-db/  # Edge Function (Deno)
+├── middleware.ts               # auth guard
+└── REGRAS_E_LOGICA.md          # documentação completa
+```
 
-## Learn More
+## Acesso inicial
 
-To learn more about Next.js, take a look at the following resources:
+- **Super Admin**: `dosedegrowth@gmail.com` (já cadastrado no banco)
+- A senha deve ser definida via Supabase Dashboard > Authentication > Users
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Schema Supabase
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Schema isolado: `crm_onboarding`
 
-## Deploy on Vercel
+- `usuarios` — auth + roles (super_admin / admin / viewer)
+- `unidades` — 1 por submissão do Form
+- `agentes` — N por unidade (parseados do form)
+- `etapas_onboarding` — checklist de 6 etapas por unidade (auto-criadas)
+- `sub_etapas` — 3 sub-itens dentro de "Grupo WhatsApp"
+- `historico_etapas` — audit trail
+- `sync_log` — rastreio de sincronizações Sheets→DB
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Triggers automáticos: ao inserir uma unidade, cria 6 etapas + 3 sub-etapas; ao mudar status de etapa, atualiza histórico e recalcula `status_geral` da unidade.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Sincronização
+
+Edge Function `crm-sync-form-to-db` lê a planilha do Form via service account, parseia "Dados do agente" e dá UPSERT em `unidades` + `agentes`. Não sobrescreve campos editados manualmente no painel (status, prioridade, observações, responsável).
+
+Cron sugerido: a cada 5 minutos.
+
+## Checklist de etapas
+
+1. **Painel criado** no Chatwoot
+2. **Grupo WhatsApp** (sub-itens: criado, time interno adicionado, franqueado adicionado)
+3. **Acessos enviados** (controlado por agente individual)
+4. **Conexão WhatsApp** feita
+5. **Treinamento** realizado
+6. **Grupo virou suporte ativo** (canal permanente)
+
+---
+
+Projeto da [Dose de Growth](https://dosedegrowth.pro) para a rede [SuperVisão](https://supervisao.com).
