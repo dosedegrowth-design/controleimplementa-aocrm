@@ -1,9 +1,10 @@
 "use client";
 
 import { useMemo } from "react";
-import { ETAPA_LABELS, formatDate } from "@/lib/utils";
+import { ETAPA_LABELS, formatDate, timeAgo } from "@/lib/utils";
 import {
   AlertOctagon,
+  AlertTriangle,
   CheckCircle2,
   Clock,
   Circle,
@@ -185,20 +186,43 @@ function UnidadeKanbanCard({ unidade, etapas, onClick }: UnidadeKanbanCardProps)
   return (
     <button
       onClick={onClick}
-      className={`w-full text-left bg-white border border-slate-200 rounded-md p-3 hover:border-[#1B2A4A] hover:shadow-md transition-all ${borderColor}`}
+      className={`w-full text-left bg-white border border-slate-200 rounded-md p-3 hover:border-[#1B2A4A] hover:shadow-md transition-all ${borderColor} ${
+        unidade.alerta_ativo ? "ring-2 ring-amber-400 ring-offset-1" : ""
+      }`}
     >
-      {/* Header: Nome + Bloqueio */}
+      {/* Header: Nome + Tags */}
       <div className="flex items-start justify-between gap-1.5 mb-2">
         <h4 className="text-sm font-bold text-slate-900 leading-tight line-clamp-2 flex-1">
           {unidade.nome_unidade}
         </h4>
-        {temBloqueio && (
-          <span className="shrink-0 inline-flex items-center gap-1 bg-red-100 text-red-700 text-[9px] font-bold uppercase px-1.5 py-0.5 rounded">
-            <AlertOctagon className="h-2.5 w-2.5" />
-            BLOQ
-          </span>
-        )}
+        <div className="flex flex-col items-end gap-0.5 shrink-0">
+          {temBloqueio && (
+            <span className="inline-flex items-center gap-1 bg-red-100 text-red-700 text-[9px] font-bold uppercase px-1.5 py-0.5 rounded">
+              <AlertOctagon className="h-2.5 w-2.5" />
+              BLOQ
+            </span>
+          )}
+        </div>
       </div>
+
+      {/* SELO DE ALERTA — destaque amarelo */}
+      {unidade.alerta_ativo && (
+        <div className="mb-2 bg-amber-50 border border-amber-300 rounded p-1.5 -mx-0.5">
+          <div className="flex items-start gap-1.5">
+            <AlertTriangle className="h-3 w-3 text-amber-600 shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <div className="text-[9px] font-bold uppercase text-amber-700 leading-tight">
+                ⚠ Alerta
+              </div>
+              {unidade.alerta_motivo && (
+                <p className="text-[10px] text-amber-900 leading-snug line-clamp-2 mt-0.5">
+                  {unidade.alerta_motivo}
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Prioridade + status header */}
       {(unidade.prioridade === "urgente" || unidade.prioridade === "alta") && (
@@ -249,9 +273,10 @@ function UnidadeKanbanCard({ unidade, etapas, onClick }: UnidadeKanbanCardProps)
             <span className="truncate">{unidade.responsavel_interno}</span>
           </div>
         )}
-        <div className="flex items-center gap-1.5 text-slate-500">
+        <div className="flex items-center gap-1.5 text-slate-500 pt-0.5 border-t border-slate-50">
           <Calendar className="h-3 w-3 text-slate-400 shrink-0" />
-          <span>{formatDate(unidade.submitted_at)}</span>
+          <span className="font-medium text-slate-600">{formatDate(unidade.submitted_at)}</span>
+          <span className="text-slate-400 text-[10px]">· {timeAgo(unidade.submitted_at)}</span>
         </div>
       </div>
 

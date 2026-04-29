@@ -36,6 +36,10 @@ export interface Unidade {
   prioridade: Prioridade;
   responsavel_interno: string | null;
   observacoes: string | null;
+  alerta_ativo: boolean;
+  alerta_motivo: string | null;
+  alerta_criado_em: string | null;
+  alerta_criado_por: string | null;
   sheet_row_hash: string;
   sheet_row_index: number | null;
   criado_em: string;

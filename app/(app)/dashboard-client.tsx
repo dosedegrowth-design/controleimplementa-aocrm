@@ -7,7 +7,7 @@ import { KanbanBoard } from "@/components/dashboard/kanban-board";
 import { UnidadesTable } from "@/components/dashboard/unidades-table";
 import { UnidadeDrawer } from "@/components/dashboard/unidade-drawer";
 import { Card, CardContent } from "@/components/ui/card";
-import { Building2, CheckCircle2, Clock, AlertOctagon, UserX } from "lucide-react";
+import { Building2, CheckCircle2, Clock, AlertOctagon, UserX, AlertTriangle } from "lucide-react";
 import type { UnidadeResumo, FunilEtapa, EtapaOnboarding } from "@/lib/types";
 
 interface DashboardClientProps {
@@ -27,14 +27,18 @@ export function DashboardClient({ unidades, funil: _funil, etapas }: DashboardCl
     const bloqueadas = unidades.filter((u) => u.status_geral === "bloqueado").length;
     const semResp = unidades.filter((u) => !u.responsavel_interno).length;
     const urgentes = unidades.filter((u) => u.prioridade === "urgente").length;
+    const comAlerta = unidades.filter((u) => u.alerta_ativo).length;
     const pctConcluido = total > 0 ? Math.round((concluidas / total) * 100) : 0;
-    return { total, concluidas, pendentes, emAndamento, bloqueadas, semResp, urgentes, pctConcluido };
+    return { total, concluidas, pendentes, emAndamento, bloqueadas, semResp, urgentes, comAlerta, pctConcluido };
   }, [unidades]);
 
   // Alertas
   const alertas: { tipo: "danger" | "warn" | "info"; texto: string }[] = [];
   if (stats.bloqueadas > 0) {
     alertas.push({ tipo: "danger", texto: `${stats.bloqueadas} unidade${stats.bloqueadas > 1 ? "s" : ""} bloqueada${stats.bloqueadas > 1 ? "s" : ""}` });
+  }
+  if (stats.comAlerta > 0) {
+    alertas.push({ tipo: "warn", texto: `${stats.comAlerta} unidade${stats.comAlerta > 1 ? "s" : ""} com alerta ativo` });
   }
   if (stats.urgentes > 0) {
     alertas.push({ tipo: "warn", texto: `${stats.urgentes} unidade${stats.urgentes > 1 ? "s" : ""} marcada${stats.urgentes > 1 ? "s" : ""} como urgente` });
@@ -82,11 +86,12 @@ export function DashboardClient({ unidades, funil: _funil, etapas }: DashboardCl
       )}
 
       {/* KPIs */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         <KPICard label="Total" value={stats.total} icon={Building2} accent="default" />
         <KPICard label="Em andamento" value={stats.emAndamento} icon={Clock} accent="warn" />
         <KPICard label="Concluídas" value={stats.concluidas} icon={CheckCircle2} accent="success" hint={`${stats.pctConcluido}%`} />
         <KPICard label="Bloqueadas" value={stats.bloqueadas} icon={AlertOctagon} accent="danger" />
+        <KPICard label="Com alerta" value={stats.comAlerta} icon={AlertTriangle} accent={stats.comAlerta > 0 ? "warn" : "default"} />
         <KPICard label="Sem responsável" value={stats.semResp} icon={UserX} accent={stats.semResp > 0 ? "warn" : "default"} />
       </div>
 

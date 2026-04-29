@@ -24,7 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { StatusBadge, PrioridadeBadge } from "@/components/status-badge";
-import { Loader2, Save, Pencil, X, ArrowRight, Mail, Trash2, Plus, ExternalLink } from "lucide-react";
+import { Loader2, Save, Pencil, X, ArrowRight, Mail, Trash2, Plus, ExternalLink, AlertTriangle, BellRing, BellOff } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import {
   ETAPA_LABELS,
@@ -153,6 +153,9 @@ function DrawerContent({ data, onReload }: { data: FullUnidadeData; onReload: ()
               <span className="text-xs text-slate-500">
                 {pct}% concluído ({concluidas}/{etapas.length})
               </span>
+              <span className="text-xs text-slate-400">
+                · Cadastro: {formatDateTime(unidade.submitted_at)}
+              </span>
             </div>
           </div>
         </div>
@@ -161,7 +164,10 @@ function DrawerContent({ data, onReload }: { data: FullUnidadeData; onReload: ()
         </div>
       </SheetHeader>
 
-      <div className="p-6">
+      {/* Banner de Alerta no topo */}
+      <AlertaBanner unidade={unidade} onReload={onReload} />
+
+      <div className="p-6 pt-3">
         <Tabs defaultValue="checklist">
           <TabsList className="w-full grid grid-cols-4">
             <TabsTrigger value="checklist">Checklist</TabsTrigger>
@@ -188,6 +194,131 @@ function DrawerContent({ data, onReload }: { data: FullUnidadeData; onReload: ()
         </Tabs>
       </div>
     </>
+  );
+}
+
+// ============ ALERTA BANNER ============
+function AlertaBanner({ unidade, onReload }: { unidade: Unidade; onReload: () => void }) {
+  const [editing, setEditing] = useState(false);
+  const [motivo, setMotivo] = useState(unidade.alerta_motivo || "");
+  const [saving, setSaving] = useState(false);
+  const supabase = createClient();
+
+  async function ativarAlerta() {
+    if (!motivo.trim()) {
+      alert("Digite o motivo do alerta");
+      return;
+    }
+    setSaving(true);
+    await supabase.from("unidades").update({
+      alerta_ativo: true,
+      alerta_motivo: motivo.trim(),
+      alerta_criado_em: new Date().toISOString(),
+      alerta_criado_por: "usuário",
+    }).eq("id", unidade.id);
+    setSaving(false);
+    setEditing(false);
+    onReload();
+  }
+
+  async function removerAlerta() {
+    if (!confirm("Remover o alerta dessa unidade?")) return;
+    await supabase.from("unidades").update({
+      alerta_ativo: false,
+      alerta_motivo: null,
+      alerta_criado_em: null,
+      alerta_criado_por: null,
+    }).eq("id", unidade.id);
+    onReload();
+  }
+
+  // Se tem alerta ativo: mostrar banner amarelo destacado
+  if (unidade.alerta_ativo && !editing) {
+    return (
+      <div className="mx-6 mt-4 bg-amber-50 border-2 border-amber-300 rounded-md p-3">
+        <div className="flex items-start gap-2.5">
+          <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between gap-2 mb-1">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-amber-700">
+                ⚠ Alerta Ativo
+              </h4>
+              <div className="flex gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setMotivo(unidade.alerta_motivo || "");
+                    setEditing(true);
+                  }}
+                  className="h-6 text-xs text-amber-700 hover:bg-amber-100"
+                >
+                  <Pencil className="h-3 w-3" /> Editar
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={removerAlerta}
+                  className="h-6 text-xs text-emerald-700 hover:bg-emerald-100"
+                >
+                  <BellOff className="h-3 w-3" /> Resolver
+                </Button>
+              </div>
+            </div>
+            <p className="text-sm text-amber-900 leading-snug">{unidade.alerta_motivo}</p>
+            {unidade.alerta_criado_em && (
+              <p className="text-[10px] text-amber-600 mt-1">
+                Criado em {formatDateTime(unidade.alerta_criado_em)}
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Se está editando ou criando
+  if (editing) {
+    return (
+      <div className="mx-6 mt-4 bg-amber-50 border-2 border-amber-300 rounded-md p-3 space-y-2">
+        <div className="flex items-center gap-2">
+          <AlertTriangle className="h-4 w-4 text-amber-600" />
+          <h4 className="text-xs font-bold uppercase tracking-wider text-amber-700">
+            {unidade.alerta_ativo ? "Editar Alerta" : "Novo Alerta"}
+          </h4>
+        </div>
+        <Textarea
+          rows={2}
+          autoFocus
+          placeholder="Motivo do alerta (ex: Não respondeu desde 20/04, sem contato com franqueado, aguardando ID Chatwoot...)"
+          value={motivo}
+          onChange={(e) => setMotivo(e.target.value)}
+          className="text-sm bg-white"
+        />
+        <div className="flex justify-end gap-2">
+          <Button variant="ghost" size="sm" onClick={() => setEditing(false)} disabled={saving}>
+            <X className="h-3 w-3" /> Cancelar
+          </Button>
+          <Button size="sm" onClick={ativarAlerta} disabled={saving} className="bg-amber-600 hover:bg-amber-700">
+            <Save className="h-3 w-3" /> {unidade.alerta_ativo ? "Atualizar" : "Marcar alerta"}
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Sem alerta: botão pra criar
+  return (
+    <div className="mx-6 mt-4">
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => setEditing(true)}
+        className="w-full text-amber-700 border-amber-300 hover:bg-amber-50"
+      >
+        <BellRing className="h-3.5 w-3.5" /> Marcar alerta nessa unidade
+      </Button>
+    </div>
   );
 }
 

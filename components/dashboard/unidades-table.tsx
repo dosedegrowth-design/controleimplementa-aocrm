@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { StatusBadge, PrioridadeBadge } from "@/components/status-badge";
-import { Search, X, Phone, User, Users, Hash, AlertOctagon, CheckCircle2, Clock, Circle, MinusCircle } from "lucide-react";
+import { Search, X, Phone, User, Users, Hash, AlertOctagon, AlertTriangle, CheckCircle2, Clock, Circle, MinusCircle } from "lucide-react";
 import { ETAPA_LABELS, formatDate, timeAgo } from "@/lib/utils";
 import type { UnidadeResumo, EtapaOnboarding, EtapaKey } from "@/lib/types";
 
@@ -61,6 +61,7 @@ export function UnidadesTable({ unidades, etapas, onSelectUnidade }: UnidadesTab
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [prioridadeFilter, setPrioridadeFilter] = useState<string>("all");
   const [responsavelFilter, setResponsavelFilter] = useState<string>("all");
+  const [soComAlerta, setSoComAlerta] = useState(false);
 
   const etapasByUnidade = useMemo(() => {
     const map = new Map<string, Map<EtapaKey, EtapaOnboarding>>();
@@ -91,11 +92,12 @@ export function UnidadesTable({ unidades, etapas, onSelectUnidade }: UnidadesTab
         if (responsavelFilter === "__sem__" && u.responsavel_interno) return false;
         if (responsavelFilter !== "__sem__" && u.responsavel_interno !== responsavelFilter) return false;
       }
+      if (soComAlerta && !u.alerta_ativo) return false;
       return true;
     });
-  }, [unidades, busca, statusFilter, prioridadeFilter, responsavelFilter]);
+  }, [unidades, busca, statusFilter, prioridadeFilter, responsavelFilter, soComAlerta]);
 
-  const hasFilters = busca !== "" || statusFilter !== "all" || prioridadeFilter !== "all" || responsavelFilter !== "all";
+  const hasFilters = busca !== "" || statusFilter !== "all" || prioridadeFilter !== "all" || responsavelFilter !== "all" || soComAlerta;
 
   return (
     <Card>
@@ -146,6 +148,15 @@ export function UnidadesTable({ unidades, etapas, onSelectUnidade }: UnidadesTab
               </SelectContent>
             </Select>
 
+            <Button
+              variant={soComAlerta ? "destructive" : "outline"}
+              size="sm"
+              onClick={() => setSoComAlerta(!soComAlerta)}
+              className={soComAlerta ? "bg-amber-500 hover:bg-amber-600 text-white" : ""}
+            >
+              <AlertTriangle className="h-3 w-3" /> Só com alerta
+            </Button>
+
             {hasFilters && (
               <Button
                 variant="ghost"
@@ -155,6 +166,7 @@ export function UnidadesTable({ unidades, etapas, onSelectUnidade }: UnidadesTab
                   setStatusFilter("all");
                   setPrioridadeFilter("all");
                   setResponsavelFilter("all");
+                  setSoComAlerta(false);
                 }}
               >
                 <X className="h-3 w-3" /> Limpar
@@ -202,10 +214,19 @@ export function UnidadesTable({ unidades, etapas, onSelectUnidade }: UnidadesTab
                     <tr
                       key={u.id}
                       onClick={() => onSelectUnidade(u.id)}
-                      className="border-b border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors"
+                      className={`border-b border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors ${
+                        u.alerta_ativo ? "bg-amber-50/40" : ""
+                      }`}
                     >
                       <td className="px-4 py-2.5 font-semibold text-[#1B2A4A]">
-                        {u.nome_unidade}
+                        <div className="flex items-center gap-1.5">
+                          {u.alerta_ativo && (
+                            <span title={u.alerta_motivo || "Alerta ativo"}>
+                              <AlertTriangle className="h-3.5 w-3.5 text-amber-600 shrink-0" />
+                            </span>
+                          )}
+                          <span>{u.nome_unidade}</span>
+                        </div>
                       </td>
                       <td className="px-4 py-2.5 text-slate-700">
                         {u.nome_franqueado || <span className="text-slate-400 italic">—</span>}
