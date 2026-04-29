@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { Sidebar } from "@/components/sidebar";
+import { AppShell } from "./app-shell";
 
 export default async function AppLayout({
   children,
@@ -16,12 +16,5 @@ export default async function AppLayout({
     redirect("/login");
   }
 
-  return (
-    <div className="min-h-screen bg-[#F8FAFC]">
-      <Sidebar userEmail={user.email || ""} />
-      <main className="ml-64 min-h-screen">
-        <div className="p-8">{children}</div>
-      </main>
-    </div>
-  );
+  return <AppShell userEmail={user.email || ""}>{children}</AppShell>;
 }

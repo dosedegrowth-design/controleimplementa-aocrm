@@ -108,8 +108,9 @@ export function KanbanBoard({ unidades, etapas, onSelectUnidade }: KanbanBoardPr
   }, [unidades, etapasByUnidade]);
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
-      {ETAPA_ORDEM.map((key) => {
+    <div className="overflow-x-auto pb-2 -mx-2 px-2 kanban-scroll-x">
+      <div className="flex gap-3 min-w-max">
+        {ETAPA_ORDEM.map((key) => {
         const lista = colunas[key];
         const bloqueadasCount = lista.filter((u) => {
           const e = etapasByUnidade.get(u.id);
@@ -117,7 +118,7 @@ export function KanbanBoard({ unidades, etapas, onSelectUnidade }: KanbanBoardPr
         }).length;
 
         return (
-          <div key={key} className="flex flex-col bg-slate-50 rounded-lg border border-slate-200 overflow-hidden h-[640px]">
+          <div key={key} className="flex flex-col bg-slate-50 rounded-lg border border-slate-200 overflow-hidden h-[640px] w-[280px] shrink-0">
             {/* Header fixo */}
             <div className="px-3 py-2 bg-[#1B2A4A] text-white flex items-center justify-between shrink-0">
               <div className="flex flex-col min-w-0">
@@ -156,6 +157,7 @@ export function KanbanBoard({ unidades, etapas, onSelectUnidade }: KanbanBoardPr
           </div>
         );
       })}
+      </div>
     </div>
   );
 }

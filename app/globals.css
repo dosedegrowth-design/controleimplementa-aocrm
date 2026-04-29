@@ -138,3 +138,19 @@
   scrollbar-width: thin;
   scrollbar-color: #CBD5E1 transparent;
 }
+
+/* Scrollbar horizontal do Kanban (entre colunas) */
+.kanban-scroll-x {
+  scrollbar-width: thin;
+  scrollbar-color: #CBD5E1 transparent;
+}
+.kanban-scroll-x::-webkit-scrollbar {
+  height: 8px;
+}
+.kanban-scroll-x::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 4px;
+}
+.kanban-scroll-x::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
