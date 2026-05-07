@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Sidebar } from "@/components/sidebar";
+import { AlertasProvider } from "@/components/alertas-provider";
 import { cn } from "@/lib/utils";
 
 export function AppShell({
@@ -38,6 +39,7 @@ export function AppShell({
       >
         <div className="p-6 lg:p-8">{children}</div>
       </main>
+      <AlertasProvider />
     </div>
   );
 }

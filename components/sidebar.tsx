@@ -10,12 +10,14 @@ import {
   LogOut,
   ChevronLeft,
   ChevronRight,
+  Inbox,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 
 const navItems = [
   { href: "/", label: "Centro de Controle", icon: LayoutDashboard },
+  { href: "/caixas-entrada", label: "Caixas de Entrada", icon: Inbox },
   { href: "/relatorios", label: "Relatórios", icon: BarChart3 },
   { href: "/configuracoes", label: "Configurações", icon: Settings },
 ];
