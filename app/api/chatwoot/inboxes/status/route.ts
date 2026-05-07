@@ -1,15 +1,40 @@
 /**
  * GET /api/chatwoot/inboxes/status
- * Retorna status atual de todas as inboxes (lê do cache local em chatwoot_status_inbox).
+ * Retorna status atual de todas as inboxes (lê do cache local).
  *
  * POST /api/chatwoot/inboxes/status
- * Força verificação ao vivo de todas as inboxes WAHA via Chatwoot API.
+ * Força verificação ao vivo:
+ *   - WAHA: consulta WAHA API direto (fonte de verdade)
+ *   - Cloud: marca como N/A (Meta gerencia)
+ *
+ * IMPORTANTE: O campo provider_connection.connection do Chatwoot
+ * está DESATUALIZADO. Sempre usar WAHA API como fonte de verdade.
  */
 import { NextResponse } from "next/server";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { chatwootGet, ChatwootError, type ChatwootInbox } from "@/lib/chatwoot/client";
 
 export const dynamic = "force-dynamic";
+
+const WAHA_BASE_URL = process.env.WAHA_BASE_URL || "https://waha.aifocus.dev";
+const WAHA_TOKEN = process.env.WAHA_TOKEN || "dc372bd703c2404387bbfc6a7cdf656b";
+
+interface WahaSession {
+  name: string;
+  status: string;
+}
+
+async function fetchWahaSessions(): Promise<Map<string, string>> {
+  const r = await fetch(`${WAHA_BASE_URL}/api/sessions`, {
+    headers: { "X-Api-Key": WAHA_TOKEN },
+    cache: "no-store",
+  });
+  if (!r.ok) throw new Error(`WAHA API ${r.status}`);
+  const sessions = (await r.json()) as WahaSession[];
+  const map = new Map<string, string>();
+  for (const s of sessions) map.set(s.name, s.status);
+  return map;
+}
 
 export async function GET() {
   const supabase = await createClient();
@@ -39,10 +64,9 @@ export async function POST() {
 
   const service = createServiceClient();
 
-  // Pega todas as accounts com inbox configurada
   const { data: accounts, error: accErr } = await service
     .from("chatwoot_accounts")
-    .select("chatwoot_account_id, inbox_id, provider, nome")
+    .select("chatwoot_account_id, inbox_id, provider, nome, session_name")
     .not("inbox_id", "is", null);
 
   if (accErr) {
@@ -56,61 +80,117 @@ export async function POST() {
     offline: 0,
     cloud_na: 0,
     erros: [] as { account_id: number; mensagem: string }[],
-    detalhes: [] as Array<{
-      account_id: number;
-      inbox_id: number;
-      nome: string;
-      status: string;
-      anterior: string | null;
-    }>,
   };
+
+  // Carrega TODAS sessões WAHA de uma vez (1 request, mais eficiente)
+  let wahaSessions: Map<string, string>;
+  try {
+    wahaSessions = await fetchWahaSessions();
+  } catch (err) {
+    return NextResponse.json(
+      { error: `Falha ao consultar WAHA: ${err instanceof Error ? err.message : String(err)}` },
+      { status: 502 },
+    );
+  }
 
   for (const acc of accounts || []) {
     try {
-      // Cloud não tem provider_connection — marca como 'na'
+      // Cloud: Meta gerencia, marca como N/A
       if (acc.provider === "whatsapp_cloud") {
         await registrarStatus(service, acc.chatwoot_account_id, acc.inbox_id, "na");
         result.cloud_na++;
         result.verificados++;
-        result.detalhes.push({
+        continue;
+      }
+
+      // WAHA: precisa do session_name pra consultar a fonte de verdade
+      let sessionName = acc.session_name as string | null;
+
+      if (!sessionName) {
+        // Busca via Chatwoot pra atualizar cache
+        try {
+          const inbox = await chatwootGet<ChatwootInbox>(
+            `/api/v1/accounts/${acc.chatwoot_account_id}/inboxes/${acc.inbox_id}`,
+            { timeout: 10000 },
+          );
+          const cfg = inbox?.provider_config as { session_name?: string } | undefined;
+          sessionName = cfg?.session_name || null;
+          if (sessionName) {
+            await service
+              .from("chatwoot_accounts")
+              .update({ session_name: sessionName })
+              .eq("chatwoot_account_id", acc.chatwoot_account_id);
+          }
+        } catch (err) {
+          if (err instanceof ChatwootError && err.status === 404) {
+            await registrarStatus(
+              service,
+              acc.chatwoot_account_id,
+              acc.inbox_id,
+              "error",
+              "Inbox deletada do Chatwoot",
+            );
+            result.erros.push({
+              account_id: acc.chatwoot_account_id,
+              mensagem: "Inbox não existe mais",
+            });
+            continue;
+          }
+          throw err;
+        }
+      }
+
+      if (!sessionName) {
+        await registrarStatus(
+          service,
+          acc.chatwoot_account_id,
+          acc.inbox_id,
+          "error",
+          "session_name não configurado na inbox",
+        );
+        result.erros.push({
           account_id: acc.chatwoot_account_id,
-          inbox_id: acc.inbox_id,
-          nome: acc.nome,
-          status: "na",
-          anterior: null,
+          mensagem: "session_name vazio",
         });
         continue;
       }
 
-      // WAHA: lê inbox e pega provider_connection.connection
-      const inbox = await chatwootGet<ChatwootInbox>(
-        `/api/v1/accounts/${acc.chatwoot_account_id}/inboxes/${acc.inbox_id}`,
-        { timeout: 10000 },
+      // Cruza com WAHA real (fonte de verdade)
+      const wahaStatus = wahaSessions.get(sessionName);
+      let connStatus: string;
+      let erroMsg: string | undefined;
+
+      if (wahaStatus === "WORKING") {
+        connStatus = "open";
+        result.online++;
+      } else if (wahaStatus === undefined) {
+        connStatus = "close";
+        erroMsg = `Session "${sessionName}" não existe na WAHA`;
+        result.offline++;
+      } else {
+        connStatus = "close";
+        erroMsg = `WAHA: ${wahaStatus}`;
+        result.offline++;
+      }
+
+      await registrarStatus(
+        service,
+        acc.chatwoot_account_id,
+        acc.inbox_id,
+        connStatus,
+        erroMsg,
       );
-      const conn = inbox?.provider_connection?.connection;
-      const status = conn === "open" ? "open" : conn === "close" ? "close" : "na";
-
-      const { anterior } = await registrarStatus(service, acc.chatwoot_account_id, acc.inbox_id, status);
-
-      if (status === "open") result.online++;
-      else if (status === "close") result.offline++;
-      else result.cloud_na++;
       result.verificados++;
-
-      result.detalhes.push({
-        account_id: acc.chatwoot_account_id,
-        inbox_id: acc.inbox_id,
-        nome: acc.nome,
-        status,
-        anterior,
-      });
     } catch (err) {
-      const msg = err instanceof ChatwootError
-        ? `${err.status}: ${err.message}`
-        : err instanceof Error ? err.message : String(err);
+      const msg = err instanceof Error ? err.message : String(err);
       result.erros.push({ account_id: acc.chatwoot_account_id, mensagem: msg });
-      // Registra como erro
-      await registrarStatus(service, acc.chatwoot_account_id, acc.inbox_id!, "error", msg);
+      await registrarStatus(
+        service,
+        acc.chatwoot_account_id,
+        acc.inbox_id!,
+        "error",
+        msg,
+      );
     }
   }
 
@@ -123,8 +203,7 @@ async function registrarStatus(
   inboxId: number,
   novoStatus: string,
   erroMsg?: string,
-): Promise<{ anterior: string | null }> {
-  // Pega último registro pra detectar mudança
+): Promise<void> {
   const { data: ultimo } = await service
     .from("chatwoot_status_inbox")
     .select("connection_status")
@@ -145,6 +224,4 @@ async function registrarStatus(
     mudou,
     mensagem_erro: erroMsg || null,
   });
-
-  return { anterior };
 }
