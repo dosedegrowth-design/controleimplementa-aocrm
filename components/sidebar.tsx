@@ -11,6 +11,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Inbox,
+  Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
@@ -18,6 +19,7 @@ import { createClient } from "@/lib/supabase/client";
 const navItems = [
   { href: "/", label: "Centro de Controle", icon: LayoutDashboard },
   { href: "/caixas-entrada", label: "Caixas de Entrada", icon: Inbox },
+  { href: "/onboardings", label: "Onboardings", icon: Sparkles },
   { href: "/relatorios", label: "Relatórios", icon: BarChart3 },
   { href: "/configuracoes", label: "Configurações", icon: Settings },
 ];
