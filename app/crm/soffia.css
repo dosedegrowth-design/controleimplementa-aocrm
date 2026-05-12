@@ -1,0 +1,712 @@
+/* ==========================================================
+   CRM SuperVisão LP — estilo Soffia
+   Tokens isolados via .soffia-scope pra não vazar no resto do app.
+   ========================================================== */
+
+.soffia-scope {
+  /* Paleta da marca (igual Soffia) */
+  --sv-red: #E30613;
+  --sv-red-hover: #C40510;
+  --sv-red-soft: #FEE2E4;
+  --sv-red-deep: #A30309;
+
+  --sv-blue: #2563EB;
+  --sv-blue-soft: #DBEAFE;
+  --sv-amber: #D97706;
+  --sv-amber-soft: #FEF3C7;
+  --sv-plum: #7E22CE;
+  --sv-plum-soft: #F3E8FF;
+  --sv-teal: #0E7490;
+
+  --navy: #0F172A;
+  --navy-2: #1E293B;
+  --slate-700: #334155;
+  --slate-600: #475569;
+  --slate-500: #64748B;
+  --slate-400: #94A3B8;
+  --slate-300: #CBD5E1;
+  --slate-200: #E2E8F0;
+  --slate-100: #F1F5F9;
+  --slate-50: #F8FAFC;
+  --paper: #FFFFFF;
+
+  --st-green: #16A34A;
+  --st-green-soft: #DCFCE7;
+  --st-blue: #2563EB;
+  --st-blue-soft: #DBEAFE;
+  --st-amber: #D97706;
+  --st-amber-soft: #FEF3C7;
+
+  --radius-sm: 8px;
+  --radius: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+
+  --shadow-sm: 0 1px 2px rgba(15,23,42,0.04), 0 1px 1px rgba(15,23,42,0.03);
+  --shadow: 0 8px 24px -10px rgba(15,23,42,0.12), 0 2px 6px -2px rgba(15,23,42,0.06);
+  --shadow-lg: 0 24px 48px -16px rgba(15,23,42,0.20), 0 8px 16px -8px rgba(15,23,42,0.10);
+
+  --font-sans: var(--font-inter-tight), "Inter Tight", "Helvetica Neue", system-ui, sans-serif;
+  --font-display: var(--font-archivo), "Archivo", "Inter Tight", system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--navy);
+  background: var(--paper);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.soffia-scope *,
+.soffia-scope *::before,
+.soffia-scope *::after {
+  box-sizing: border-box;
+}
+
+.soffia-scope img,
+.soffia-scope svg {
+  display: block;
+  max-width: 100%;
+}
+
+.soffia-scope a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.soffia-scope button {
+  font: inherit;
+  cursor: pointer;
+  border: 0;
+  background: transparent;
+  color: inherit;
+}
+
+.soffia-scope .container {
+  width: 100%;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 32px;
+}
+@media (max-width: 720px) {
+  .soffia-scope .container { padding: 0 20px; }
+}
+
+/* ─────── Typography ─────── */
+.soffia-scope .eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--slate-500);
+  font-weight: 500;
+}
+.soffia-scope .eyebrow .dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--sv-red);
+  box-shadow: 0 0 0 4px rgba(227,6,19,0.16);
+  animation: soffia-pulse 1.8s ease-in-out infinite;
+}
+.soffia-scope .eyebrow.on-dark { color: rgba(255,255,255,0.7); }
+.soffia-scope .eyebrow.on-dark .dot { box-shadow: 0 0 0 4px rgba(227,6,19,0.25); }
+
+@keyframes soffia-pulse {
+  0%, 100% { box-shadow: 0 0 0 4px rgba(227,6,19,0.16); }
+  50%      { box-shadow: 0 0 0 7px rgba(227,6,19,0.04); }
+}
+
+.soffia-scope h1,
+.soffia-scope h2,
+.soffia-scope h3,
+.soffia-scope h4 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+  margin: 0;
+  color: var(--navy);
+}
+
+.soffia-scope .h-display {
+  font-family: var(--font-display);
+  font-size: clamp(40px, 5.4vw, 72px);
+  line-height: 1.04;
+  letter-spacing: -0.035em;
+  font-weight: 800;
+}
+
+.soffia-scope .h-section {
+  font-family: var(--font-display);
+  font-size: clamp(34px, 4.4vw, 58px);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  font-weight: 700;
+}
+
+.soffia-scope .lead {
+  font-size: clamp(17px, 1.4vw, 20px);
+  line-height: 1.55;
+  color: var(--slate-600);
+  max-width: 60ch;
+  text-wrap: pretty;
+}
+.soffia-scope .lead.on-dark { color: rgba(255,255,255,0.78); }
+
+.soffia-scope .soffia-mark {
+  font-family: var(--font-display);
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--sv-red) 0%, var(--sv-red-deep) 60%, var(--navy) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  position: relative;
+  display: inline;
+  font-style: normal;
+}
+.soffia-scope .soffia-mark.on-dark {
+  background: linear-gradient(135deg, var(--sv-red) 0%, #FF3B47 60%, #fff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ─────── Sections ─────── */
+.soffia-scope section { position: relative; overflow: hidden; }
+.soffia-scope .section-pad   { padding: clamp(72px, 9vw, 132px) 0; }
+.soffia-scope .section-pad-sm{ padding: clamp(48px, 6vw, 80px) 0; }
+.soffia-scope .section.dark { background: var(--navy); color: var(--paper); }
+.soffia-scope .section.dark h1,
+.soffia-scope .section.dark h2,
+.soffia-scope .section.dark h3,
+.soffia-scope .section.dark h4 { color: #fff; }
+.soffia-scope .section.tinted { background: var(--slate-50); }
+
+/* ─────── Buttons ─────── */
+.soffia-scope .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 22px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+  transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.soffia-scope .btn:hover { transform: translateY(-1px); }
+.soffia-scope .btn:active { transform: translateY(0); }
+
+.soffia-scope .btn-red {
+  background: var(--sv-red);
+  color: #fff;
+  box-shadow: 0 8px 20px -8px rgba(227,6,19,0.5);
+}
+.soffia-scope .btn-red:hover {
+  background: var(--sv-red-hover);
+  box-shadow: 0 14px 28px -10px rgba(227,6,19,0.6);
+}
+
+.soffia-scope .btn-outline {
+  background: transparent;
+  color: var(--navy);
+  border: 1px solid var(--slate-300);
+}
+.soffia-scope .btn-outline:hover { border-color: var(--navy); }
+.soffia-scope .btn-outline.on-dark { color: #fff; border-color: rgba(255,255,255,0.25); }
+.soffia-scope .btn-outline.on-dark:hover { border-color: rgba(255,255,255,0.6); }
+
+.soffia-scope .btn-pulse { position: relative; isolation: isolate; }
+.soffia-scope .btn-pulse::before {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 14px;
+  background: var(--sv-red);
+  z-index: -1;
+  opacity: 0;
+  animation: btn-pulse 2.2s ease-in-out infinite;
+}
+@keyframes btn-pulse {
+  0%   { transform: scale(0.97); opacity: 0.35; }
+  60%  { transform: scale(1.10); opacity: 0; }
+  100% { transform: scale(1.10); opacity: 0; }
+}
+
+/* ─────── Reveal ─────── */
+.soffia-scope .reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.7s cubic-bezier(.2,.7,.2,1), transform 0.7s cubic-bezier(.2,.7,.2,1);
+}
+.soffia-scope .reveal.in { opacity: 1; transform: none; }
+.soffia-scope .reveal-delay-1 { transition-delay: 0.07s; }
+.soffia-scope .reveal-delay-2 { transition-delay: 0.16s; }
+.soffia-scope .reveal-delay-3 { transition-delay: 0.26s; }
+.soffia-scope .reveal-delay-4 { transition-delay: 0.38s; }
+.soffia-scope .reveal-delay-5 { transition-delay: 0.50s; }
+
+.soffia-scope .word-reveal { display: inline; }
+.soffia-scope .word-reveal > span {
+  display: inline-block;
+  transform: translateY(28px);
+  opacity: 0;
+  transition: transform 0.7s cubic-bezier(.2,.7,.2,1), opacity 0.5s;
+}
+.soffia-scope .word-reveal.in > span { transform: translateY(0); opacity: 1; }
+
+/* ─────── Card ─────── */
+.soffia-scope .card {
+  background: var(--paper);
+  border: 1px solid var(--slate-200);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s;
+}
+.soffia-scope .card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--slate-300);
+}
+.soffia-scope .card.on-dark {
+  background: rgba(255,255,255,0.03);
+  border-color: rgba(255,255,255,0.10);
+  color: rgba(255,255,255,0.92);
+}
+.soffia-scope .card.on-dark:hover {
+  background: rgba(255,255,255,0.05);
+  border-color: rgba(227,6,19,0.4);
+  box-shadow: 0 20px 40px -10px rgba(0,0,0,0.4);
+}
+
+/* ─────── Mockup chrome ─────── */
+.soffia-scope .mockup {
+  background: var(--paper);
+  border-radius: 14px;
+  box-shadow: 0 24px 60px -20px rgba(15,23,42,0.30), 0 8px 20px -8px rgba(15,23,42,0.12);
+  overflow: hidden;
+  border: 1px solid var(--slate-200);
+}
+.soffia-scope .mockup-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  background: var(--slate-50);
+  border-bottom: 1px solid var(--slate-200);
+}
+.soffia-scope .mockup-bar .dot { width: 10px; height: 10px; border-radius: 50%; }
+.soffia-scope .mockup-bar .dot.r { background: #FF5F57; }
+.soffia-scope .mockup-bar .dot.y { background: #FEBC2E; }
+.soffia-scope .mockup-bar .dot.g { background: #28C840; }
+.soffia-scope .mockup-bar .url {
+  margin-left: 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--slate-500);
+  background: var(--paper);
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--slate-200);
+}
+
+/* ─────── Phone (WhatsApp mockup) ─────── */
+.soffia-scope .phone {
+  width: 270px;
+  background: #111;
+  border-radius: 34px;
+  padding: 8px;
+  box-shadow: 0 0 0 2px #1a1a1a, 0 24px 50px -15px rgba(0,0,0,0.45);
+}
+.soffia-scope .phone-screen {
+  background: #ECE5DD;
+  border-radius: 26px;
+  overflow: hidden;
+  height: 520px;
+  display: flex;
+  flex-direction: column;
+}
+.soffia-scope .wa-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: #075E54;
+  color: #fff;
+}
+.soffia-scope .wa-avatar {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: var(--sv-red);
+  display: grid; place-items: center;
+  color: #fff;
+  font-weight: 800;
+  font-size: 13px;
+  font-family: var(--font-display);
+}
+.soffia-scope .wa-name { font-size: 13.5px; font-weight: 600; line-height: 1.1; }
+.soffia-scope .wa-status { font-size: 10.5px; opacity: 0.85; }
+.soffia-scope .wa-msgs {
+  flex: 1;
+  padding: 12px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  overflow: hidden;
+  background: #ECE5DD;
+}
+.soffia-scope .wa-bubble {
+  max-width: 78%;
+  padding: 7px 10px 8px;
+  border-radius: 12px;
+  font-size: 12.5px;
+  line-height: 1.35;
+  position: relative;
+  box-shadow: 0 1px 1px rgba(0,0,0,0.06);
+  color: #111;
+}
+.soffia-scope .wa-bubble.them { background: #fff; align-self: flex-start; border-top-left-radius: 4px; }
+.soffia-scope .wa-bubble.me   { background: #DCF8C6; align-self: flex-end; border-top-right-radius: 4px; }
+.soffia-scope .wa-typing {
+  align-self: flex-start;
+  background: #fff;
+  border-radius: 12px;
+  padding: 8px 11px;
+  display: inline-flex;
+  gap: 4px;
+  box-shadow: 0 1px 1px rgba(0,0,0,0.06);
+}
+.soffia-scope .wa-typing span {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: #999;
+  animation: soffia-type 1.2s ease-in-out infinite;
+}
+.soffia-scope .wa-typing span:nth-child(2) { animation-delay: 0.15s; }
+.soffia-scope .wa-typing span:nth-child(3) { animation-delay: 0.3s; }
+@keyframes soffia-type {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+  30% { transform: translateY(-3px); opacity: 1; }
+}
+.soffia-scope .wa-bubble .meta {
+  display: block;
+  font-size: 9px;
+  color: rgba(0,0,0,0.45);
+  text-align: right;
+  margin-top: 2px;
+}
+
+/* ─────── Hero ─────── */
+.soffia-scope .hero {
+  position: relative;
+  min-height: 92vh;
+  display: flex;
+  align-items: center;
+  padding: clamp(80px, 10vh, 120px) 0 clamp(60px, 8vh, 100px);
+  background: var(--paper);
+  isolation: isolate;
+}
+.soffia-scope .hero-grid-bg {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(ellipse 50% 40% at 75% 30%, rgba(227,6,19,0.06) 0%, transparent 70%),
+    linear-gradient(180deg, #fff 0%, #fff 60%, #F8FAFC 100%);
+}
+.soffia-scope .hero-grid-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(to right, rgba(15,23,42,0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(15,23,42,0.04) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 50%, black 30%, transparent 80%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 50%, black 30%, transparent 80%);
+}
+.soffia-scope .hero-inner {
+  display: grid;
+  grid-template-columns: 1.05fr 1fr;
+  gap: clamp(40px, 5vw, 80px);
+  align-items: center;
+}
+@media (max-width: 960px) {
+  .soffia-scope .hero-inner { grid-template-columns: 1fr; }
+}
+
+/* ─────── Counter ─────── */
+.soffia-scope .counter-num {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(38px, 4.6vw, 60px);
+  line-height: 1;
+  letter-spacing: -0.04em;
+  color: var(--sv-red);
+  font-variant-numeric: tabular-nums;
+  display: inline-block;
+}
+.soffia-scope .counter-num.on-dark { color: #fff; }
+
+/* ─────── CRM chip (igual Soffia chip) ─────── */
+.soffia-scope .crm-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  background: var(--sv-red);
+  color: #fff;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+}
+.soffia-scope .crm-chip::before {
+  content: "";
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: #fff;
+  animation: soffia-soft-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes soffia-soft-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%      { transform: scale(1.4); opacity: 0.5; }
+}
+
+/* ─────── Status badges ─────── */
+.soffia-scope .status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: 999px;
+}
+.soffia-scope .status-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.soffia-scope .status-badge.lead    { background: var(--st-green-soft); color: #15803D; }
+.soffia-scope .status-badge.qual    { background: var(--st-blue-soft); color: #1D4ED8; }
+.soffia-scope .status-badge.agend   { background: #FEE2E4; color: var(--sv-red); }
+.soffia-scope .status-badge.fechado { background: var(--st-green-soft); color: #166534; }
+
+/* ─────── Funnel ─────── */
+.soffia-scope .funnel-track { position: relative; }
+.soffia-scope .funnel-line {
+  position: absolute;
+  left: 27px;
+  top: 12px;
+  bottom: 12px;
+  width: 2px;
+  background: var(--slate-200);
+  overflow: hidden;
+}
+.soffia-scope .funnel-line .progress {
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, var(--sv-red) 0%, var(--sv-red-hover) 100%);
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: transform 1.6s cubic-bezier(.2,.7,.2,1);
+}
+.soffia-scope .funnel-line.in .progress { transform: scaleY(1); }
+.soffia-scope .funnel-num {
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  background: var(--paper);
+  border: 2px solid var(--slate-200);
+  display: grid; place-items: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--slate-500);
+  position: relative;
+  z-index: 1;
+  transition: all 0.4s ease;
+}
+.soffia-scope .reveal.in .funnel-num {
+  border-color: var(--sv-red);
+  color: var(--sv-red);
+  box-shadow: 0 0 0 5px rgba(227,6,19,0.10);
+  background: #fff;
+}
+
+/* ─────── Compare table ─────── */
+.soffia-scope .cmp-table {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--slate-200);
+  background: #fff;
+}
+.soffia-scope .cmp-col { padding: 0; }
+.soffia-scope .cmp-col.right { background: #FFF8F8; border-left: 1px solid var(--slate-200); }
+.soffia-scope .cmp-head {
+  padding: 22px 28px 18px;
+  border-bottom: 1px solid var(--slate-200);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.soffia-scope .cmp-row {
+  padding: 14px 28px;
+  border-bottom: 1px solid var(--slate-200);
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 15px;
+  line-height: 1.4;
+}
+.soffia-scope .cmp-row:last-child { border-bottom: 0; }
+.soffia-scope .cmp-row .icon {
+  flex-shrink: 0;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  display: grid; place-items: center;
+  margin-top: 1px;
+}
+.soffia-scope .cmp-col.left .cmp-row .icon { background: #FEE2E4; color: var(--sv-red); }
+.soffia-scope .cmp-col.right .cmp-row .icon {
+  background: var(--st-green); color: #fff;
+  box-shadow: 0 0 0 3px rgba(22,163,74,0.18);
+}
+@media (max-width: 720px) {
+  .soffia-scope .cmp-table { grid-template-columns: 1fr; }
+  .soffia-scope .cmp-col.right { border-left: 0; border-top: 1px solid var(--slate-200); }
+}
+
+/* ─────── Antes vs Depois ─────── */
+.soffia-scope .before-after {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  border: 1px solid var(--slate-200);
+  box-shadow: var(--shadow);
+}
+.soffia-scope .ba-col { padding: clamp(28px, 3.6vw, 48px); }
+.soffia-scope .ba-col.before {
+  background: linear-gradient(180deg, var(--navy) 0%, #0A1020 100%);
+  color: rgba(255,255,255,0.7);
+}
+.soffia-scope .ba-col.after {
+  background: linear-gradient(180deg, #FFF8F8 0%, #FFEDEE 100%);
+  color: var(--navy);
+}
+.soffia-scope .ba-col h3 { color: inherit; }
+.soffia-scope .ba-col.before h3 { color: #fff; }
+.soffia-scope .ba-list { list-style: none; padding: 0; margin: 24px 0 0; display: flex; flex-direction: column; gap: 10px; }
+.soffia-scope .ba-list li {
+  padding: 12px 14px;
+  border-radius: 10px;
+  font-size: 15px;
+  line-height: 1.4;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.soffia-scope .ba-col.before .ba-list li {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.soffia-scope .ba-col.after .ba-list li {
+  background: #fff;
+  border: 1px solid rgba(227,6,19,0.16);
+  color: var(--navy);
+}
+.soffia-scope .ba-icon {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  display: grid; place-items: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.soffia-scope .ba-col.before .ba-icon { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.5); }
+.soffia-scope .ba-col.after  .ba-icon { background: var(--sv-red); color: #fff; }
+@media (max-width: 720px) { .soffia-scope .before-after { grid-template-columns: 1fr; } }
+
+/* ─────── CTA final ─────── */
+.soffia-scope .cta-final {
+  background: var(--navy);
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+}
+.soffia-scope .cta-final::before {
+  content: "";
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 60% 50% at 50% 100%, rgba(227,6,19,0.30) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 30% at 30% 0%, rgba(227,6,19,0.12) 0%, transparent 70%);
+}
+.soffia-scope .cta-final-grid {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(to right, rgba(255,255,255,0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255,255,255,0.04) 1px, transparent 1px);
+  background-size: 80px 80px;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 50%, black 20%, transparent 90%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 50%, black 20%, transparent 90%);
+}
+
+/* ─────── Floating progress ─────── */
+.soffia-scope .floating-marker {
+  position: fixed;
+  top: 50%;
+  right: 28px;
+  transform: translateY(-50%);
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-end;
+}
+.soffia-scope .floating-marker .step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--slate-400);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: color 0.3s;
+  cursor: pointer;
+}
+.soffia-scope .floating-marker .step .label { opacity: 0; transform: translateX(6px); transition: opacity 0.2s, transform 0.2s; }
+.soffia-scope .floating-marker .step:hover .label { opacity: 1; transform: translateX(0); }
+.soffia-scope .floating-marker .step .bar {
+  width: 22px; height: 2px;
+  background: var(--slate-300);
+  transition: background 0.3s, width 0.3s;
+}
+.soffia-scope .floating-marker .step.active .bar { background: var(--sv-red); width: 36px; }
+.soffia-scope .floating-marker .step.active { color: var(--sv-red); }
+.soffia-scope .floating-marker.on-dark .step { color: rgba(255,255,255,0.5); }
+.soffia-scope .floating-marker.on-dark .step .bar { background: rgba(255,255,255,0.25); }
+.soffia-scope .floating-marker.on-dark .step.active { color: #fff; }
+.soffia-scope .floating-marker.on-dark .step.active .bar { background: var(--sv-red); width: 36px; }
+@media (max-width: 960px) { .soffia-scope .floating-marker { display: none; } }
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .soffia-scope *,
+  .soffia-scope *::before,
+  .soffia-scope *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -1,215 +1,470 @@
 "use client";
 
+import "./soffia.css";
 import Link from "next/link";
-import { useState } from "react";
-import {
-  ArrowRight,
-  CheckCircle2,
-  Inbox,
-  Kanban,
-  Users as UsersIcon,
-  Calendar,
-  BarChart3,
-  Tag,
-  Sparkles,
-  Phone,
-  Search,
-  Activity,
-  Smartphone,
-  ChevronDown,
-  Menu,
-  X,
-  Zap,
-  Shield,
-  Clock,
-  TrendingUp,
-} from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
-const CTA_CADASTRO = "/cadastro";
+const CTA = "/cadastro";
 
-export function CrmLanding() {
+// ============== HOOKS / UTILS ==============
+function useReveal() {
+  const ref = useRef<HTMLDivElement | null>(null);
+  const [shown, setShown] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            setShown(true);
+            io.disconnect();
+          }
+        });
+      },
+      { threshold: 0.18, rootMargin: "0px 0px -50px 0px" },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+  return [ref, shown] as const;
+}
+
+function Reveal({
+  delay = 0,
+  className = "",
+  style,
+  children,
+}: {
+  delay?: number;
+  className?: string;
+  style?: React.CSSProperties;
+  children: React.ReactNode;
+}) {
+  const [ref, shown] = useReveal();
+  const cls = `reveal ${shown ? "in" : ""} ${delay ? `reveal-delay-${delay}` : ""} ${className}`;
   return (
-    <div className="min-h-screen bg-white text-slate-900 antialiased">
-      <Navbar />
-      <Hero />
-      <BadgeRede />
-      <Problema />
-      <Solucao />
-      <Features />
-      <Demo />
-      <ParaQuem />
-      <ComoFunciona />
-      <SoffiaTeaser />
-      <Numeros />
-      <FAQ />
-      <CTAFinal />
-      <Footer />
+    <div ref={ref} className={cls} style={style}>
+      {children}
     </div>
   );
 }
 
-// ============================== NAVBAR ==============================
-function Navbar() {
-  const [open, setOpen] = useState(false);
+function WordReveal({
+  text,
+  highlight = [],
+  delayBase = 0,
+  className = "",
+}: {
+  text: string;
+  highlight?: string[];
+  delayBase?: number;
+  className?: string;
+}) {
+  const [ref, shown] = useReveal();
+  const words = text.split(" ");
   return (
-    <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-        <Link href="/crm" className="flex items-center gap-2.5">
-          <div className="h-9 w-9 rounded-lg bg-[#E31E24] font-bold text-white flex items-center justify-center">
-            S
-          </div>
-          <div className="leading-tight">
-            <div className="text-sm font-bold text-[#1B2A4A]">SuperVisão</div>
-            <div className="text-[10px] uppercase tracking-wider text-slate-500">
-              CRM Oficial
-            </div>
-          </div>
-        </Link>
-        <nav className="hidden md:flex items-center gap-7 text-sm font-medium text-slate-700">
-          <a href="#problema" className="hover:text-[#1B2A4A]">Por quê</a>
-          <a href="#features" className="hover:text-[#1B2A4A]">Recursos</a>
-          <a href="#como-funciona" className="hover:text-[#1B2A4A]">Como funciona</a>
-          <a href="#faq" className="hover:text-[#1B2A4A]">FAQ</a>
-          <Link
-            href="/login"
-            className="text-slate-500 hover:text-[#1B2A4A] text-xs"
-          >
-            Já sou cliente →
-          </Link>
-        </nav>
-        <div className="hidden md:flex items-center gap-3">
-          <Link
-            href={CTA_CADASTRO}
-            className="bg-[#E31E24] text-white font-semibold text-sm px-4 py-2 rounded-lg hover:bg-[#C41A1F] transition-colors"
-          >
-            Cadastrar unidade
-          </Link>
-        </div>
-        <button onClick={() => setOpen(!open)} className="md:hidden">
-          {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </button>
-      </div>
-      {open && (
-        <div className="md:hidden border-t border-slate-200 bg-white">
-          <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col gap-3 text-sm">
-            <a href="#problema" onClick={() => setOpen(false)}>Por quê</a>
-            <a href="#features" onClick={() => setOpen(false)}>Recursos</a>
-            <a href="#como-funciona" onClick={() => setOpen(false)}>Como funciona</a>
-            <a href="#faq" onClick={() => setOpen(false)}>FAQ</a>
-            <Link href="/login" onClick={() => setOpen(false)}>
-              Já sou cliente
-            </Link>
-            <Link
-              href={CTA_CADASTRO}
-              className="bg-[#E31E24] text-white font-semibold px-4 py-2 rounded-lg text-center"
-            >
-              Cadastrar unidade
-            </Link>
-          </div>
-        </div>
-      )}
-    </header>
+    <span
+      ref={ref as unknown as React.Ref<HTMLSpanElement>}
+      className={`word-reveal ${shown ? "in" : ""} ${className}`}
+    >
+      {words.map((w, i) => {
+        const clean = w.replace(/[.,—]/g, "");
+        const isHi = highlight.includes(clean);
+        return (
+          <span key={i} style={{ transitionDelay: `${delayBase + i * 80}ms` }}>
+            {isHi ? <em className="soffia-mark">{w}</em> : w}
+            {i < words.length - 1 ? "\u00A0" : ""}
+          </span>
+        );
+      })}
+    </span>
   );
 }
 
-// ============================== HERO ==============================
+function Counter({
+  to,
+  prefix = "",
+  suffix = "",
+  duration = 1500,
+}: {
+  to: number;
+  prefix?: string;
+  suffix?: string;
+  duration?: number;
+}) {
+  const [ref, shown] = useReveal();
+  const [val, setVal] = useState(0);
+  useEffect(() => {
+    if (!shown) return;
+    let raf: number;
+    const start = performance.now();
+    const step = (t: number) => {
+      const k = Math.min(1, (t - start) / duration);
+      const eased = 1 - Math.pow(1 - k, 3);
+      setVal(to * eased);
+      if (k < 1) raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [shown, to, duration]);
+  return (
+    <span
+      ref={ref as unknown as React.Ref<HTMLSpanElement>}
+      className="counter-num"
+    >
+      {prefix}
+      {Math.round(val).toLocaleString("pt-BR")}
+      {suffix}
+    </span>
+  );
+}
+
+// ============== MAIN ==============
+export function CrmLanding() {
+  return (
+    <div className="soffia-scope">
+      <Hero />
+      <Problema />
+      <Solucao />
+      <Funil />
+      <AcessosSection />
+      <AgendaSection />
+      <Painel />
+      <NotCommonCRM />
+      <BeforeAfter />
+      <SoffiaTeaser />
+      <CTAFinal />
+      <Footer />
+      <FloatingProgress />
+    </div>
+  );
+}
+
+// ============== HERO ==============
 function Hero() {
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-[#1B2A4A] via-[#243556] to-[#111D35] text-white">
-      {/* Glow decorativo */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-32 -left-32 h-80 w-80 rounded-full bg-[#E31E24]/20 blur-3xl" />
-        <div className="absolute -bottom-32 -right-32 h-80 w-80 rounded-full bg-blue-500/10 blur-3xl" />
-      </div>
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-20 sm:py-28">
-        <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
-          {/* Texto */}
-          <div>
-            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur border border-white/20 rounded-full px-3 py-1 text-xs font-medium mb-6">
-              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-              CRM oficial da rede SuperVisão
+    <section className="hero" id="hero">
+      <div className="hero-grid-bg" />
+      <div className="container hero-inner">
+        <div>
+          <Reveal>
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 12,
+                padding: "8px 8px 8px 14px",
+                borderRadius: 999,
+                background: "#fff",
+                border: "1px solid var(--slate-200)",
+                boxShadow: "var(--shadow-sm)",
+              }}
+            >
+              <span
+                style={{
+                  width: 24,
+                  height: 24,
+                  borderRadius: 6,
+                  background: "var(--sv-red)",
+                  color: "#fff",
+                  fontWeight: 900,
+                  fontFamily: "var(--font-display)",
+                  display: "grid",
+                  placeItems: "center",
+                  fontSize: 14,
+                }}
+              >
+                S
+              </span>
+              <span className="crm-chip">CRM SuperVisão</span>
             </div>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-[1.05] tracking-tight">
-              Pare de perder cliente no <span className="text-[#E31E24]">WhatsApp</span>.
-            </h1>
-            <p className="mt-5 text-lg text-slate-300 leading-relaxed max-w-xl">
-              Centralize, organize e venda mais com o painel oficial da rede.
-              Multi-atendente, kanban de vendas, agenda integrada e relatórios
-              em tempo real — tudo num lugar só.
+          </Reveal>
+          <h1 className="h-display" style={{ marginTop: 28 }}>
+            <WordReveal
+              text="Pare de perder cliente no WhatsApp."
+              highlight={["WhatsApp."]}
+            />
+            <br />
+            <WordReveal
+              text="Centralize tudo num painel só."
+              delayBase={420}
+              highlight={["painel"]}
+            />
+          </h1>
+          <Reveal delay={4}>
+            <p className="lead" style={{ marginTop: 28 }}>
+              O painel oficial da rede SuperVisão pra unidades. Conversas,
+              agenda, time comercial, kanban de vendas, números reais — tudo
+              num lugar só, em tempo real.
             </p>
-            <div className="mt-8 flex flex-col sm:flex-row gap-3">
-              <Link
-                href={CTA_CADASTRO}
-                className="inline-flex items-center justify-center gap-2 bg-[#E31E24] hover:bg-[#C41A1F] text-white font-semibold px-6 py-3.5 rounded-lg transition-colors shadow-lg shadow-red-500/30"
-              >
+          </Reveal>
+          <Reveal delay={4} style={{ marginTop: 36 }}>
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+              <Link href={CTA} className="btn btn-red btn-pulse">
                 Cadastrar minha unidade
-                <ArrowRight className="h-4 w-4" />
+                <span style={{ fontSize: 18 }}>→</span>
               </Link>
-              <a
-                href="#demo"
-                className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold px-6 py-3.5 rounded-lg transition-colors"
-              >
-                Ver demonstração
+              <a href="#painel" className="btn btn-outline">
+                Ver o painel
               </a>
             </div>
-            <div className="mt-8 flex items-center gap-5 text-xs text-slate-400">
-              <div className="flex items-center gap-1.5">
-                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
-                Sem instalação
-              </div>
-              <div className="flex items-center gap-1.5">
-                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
-                Configuração em ~2 dias
-              </div>
-              <div className="flex items-center gap-1.5">
-                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
-                Treinamento incluso
-              </div>
+          </Reveal>
+          <Reveal delay={5} style={{ marginTop: 48 }}>
+            <div
+              style={{
+                display: "flex",
+                gap: 28,
+                flexWrap: "wrap",
+                color: "var(--slate-500)",
+                fontSize: 12.5,
+                fontFamily: "var(--font-mono)",
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+              }}
+            >
+              <span>WhatsApp multi-atendente</span>
+              <span style={{ color: "var(--slate-300)" }}>·</span>
+              <span>Kanban em tempo real</span>
+              <span style={{ color: "var(--slate-300)" }}>·</span>
+              <span>Agenda integrada</span>
             </div>
-          </div>
-
-          {/* Mockup ilustrativo */}
-          <div className="relative">
-            <div className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-4 shadow-2xl">
-              <div className="flex items-center gap-1.5 mb-3">
-                <div className="h-2.5 w-2.5 rounded-full bg-red-400/60" />
-                <div className="h-2.5 w-2.5 rounded-full bg-yellow-400/60" />
-                <div className="h-2.5 w-2.5 rounded-full bg-emerald-400/60" />
-                <div className="flex-1 text-center text-[10px] text-slate-400">
-                  controleimplementa-aocrm.vercel.app
-                </div>
-              </div>
-              {/* Mini kanban mockup */}
-              <div className="bg-white rounded-lg p-3 grid grid-cols-3 gap-2">
-                <KanbanCol titulo="Lead" cor="#3B82F6" cards={3} />
-                <KanbanCol titulo="Interesse" cor="#F59E0B" cards={5} />
-                <KanbanCol titulo="Fechado" cor="#10B981" cards={2} />
-              </div>
-              <div className="bg-white rounded-lg mt-2 p-3 grid grid-cols-3 gap-2">
-                <MiniKpi label="Hoje" valor="14" cor="text-blue-600" />
-                <MiniKpi label="Esta semana" valor="58" cor="text-emerald-600" />
-                <MiniKpi label="Convertidos" valor="22%" cor="text-[#1B2A4A]" />
-              </div>
-            </div>
-          </div>
+          </Reveal>
         </div>
+
+        <HeroMockup />
       </div>
     </section>
   );
 }
 
-function KanbanCol({ titulo, cor, cards }: { titulo: string; cor: string; cards: number }) {
+function HeroMockup() {
+  const [ref, shown] = useReveal();
   return (
-    <div className="bg-slate-50 rounded p-2">
-      <div className="flex items-center gap-1.5 mb-2">
-        <div className="h-1.5 w-1.5 rounded-full" style={{ background: cor }} />
-        <span className="text-[9px] font-bold uppercase text-slate-500">{titulo}</span>
+    <div
+      ref={ref}
+      style={{
+        position: "relative",
+        transform: shown ? "translateX(0)" : "translateX(40px)",
+        opacity: shown ? 1 : 0,
+        transition:
+          "transform 0.9s cubic-bezier(.2,.7,.2,1) 0.3s, opacity 0.9s 0.3s",
+        paddingBottom: 60,
+      }}
+    >
+      <div
+        className="mockup"
+        style={{ position: "relative", zIndex: 1, transform: "rotate(-1deg)" }}
+      >
+        <div className="mockup-bar">
+          <span className="dot r" />
+          <span className="dot y" />
+          <span className="dot g" />
+          <span className="url">controle.supervisao.com</span>
+          <span
+            style={{
+              marginLeft: "auto",
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              fontSize: 11,
+              color: "var(--st-green)",
+              fontFamily: "var(--font-mono)",
+              fontWeight: 600,
+            }}
+          >
+            <span
+              style={{
+                width: 6,
+                height: 6,
+                borderRadius: "50%",
+                background: "var(--st-green)",
+                animation: "soffia-soft-pulse 1.6s infinite",
+              }}
+            />
+            AO VIVO
+          </span>
+        </div>
+        <DashboardPreview />
       </div>
-      <div className="space-y-1">
-        {Array.from({ length: cards }).map((_, i) => (
-          <div key={i} className="bg-white rounded border border-slate-200 p-1.5">
-            <div className="h-1.5 w-2/3 bg-slate-300 rounded mb-1" />
-            <div className="h-1 w-1/2 bg-slate-200 rounded" />
+
+      <div
+        style={{
+          position: "absolute",
+          right: -16,
+          bottom: -10,
+          zIndex: 2,
+          transform: "rotate(4deg)",
+        }}
+      >
+        <WAPhone />
+      </div>
+
+      <div
+        style={{
+          position: "absolute",
+          left: -16,
+          top: 24,
+          zIndex: 3,
+          background: "var(--navy)",
+          color: "#fff",
+          padding: "9px 14px",
+          borderRadius: 999,
+          fontSize: 11.5,
+          fontFamily: "var(--font-mono)",
+          letterSpacing: "0.06em",
+          boxShadow: "0 12px 30px -10px rgba(0,0,0,0.4)",
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          fontWeight: 500,
+        }}
+      >
+        <span
+          style={{
+            width: 6,
+            height: 6,
+            borderRadius: "50%",
+            background: "var(--sv-red)",
+            animation: "soffia-soft-pulse 1.6s infinite",
+          }}
+        />
+        3 atendentes online · 12 conversas
+      </div>
+    </div>
+  );
+}
+
+function DashboardPreview() {
+  return (
+    <div
+      style={{
+        padding: 18,
+        background: "#fff",
+        height: 340,
+        display: "flex",
+        flexDirection: "column",
+        gap: 14,
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          <span
+            style={{
+              fontSize: 10,
+              fontFamily: "var(--font-mono)",
+              color: "var(--slate-500)",
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+              fontWeight: 600,
+            }}
+          >
+            Faturamento da unidade · Hoje
+          </span>
+          <span
+            style={{
+              fontFamily: "var(--font-display)",
+              fontSize: 30,
+              fontWeight: 800,
+              letterSpacing: "-0.03em",
+              color: "var(--navy)",
+            }}
+          >
+            R$ <Counter to={14820} duration={1800} />
+          </span>
+        </div>
+        <div style={{ display: "flex", gap: 6 }}>
+          {["Hoje", "Semana", "Mês"].map((t, i) => (
+            <span
+              key={t}
+              style={{
+                padding: "6px 12px",
+                borderRadius: 999,
+                fontSize: 11,
+                fontFamily: "var(--font-mono)",
+                fontWeight: 600,
+                background: i === 0 ? "var(--sv-red)" : "var(--slate-100)",
+                color: i === 0 ? "#fff" : "var(--slate-500)",
+              }}
+            >
+              {t}
+            </span>
+          ))}
+        </div>
+      </div>
+      <svg
+        viewBox="0 0 320 90"
+        preserveAspectRatio="none"
+        style={{ width: "100%", height: 80 }}
+      >
+        <defs>
+          <linearGradient id="dashGrad" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stopColor="#E30613" stopOpacity="0.20" />
+            <stop offset="100%" stopColor="#E30613" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <path
+          d="M0 70 L40 60 L80 65 L120 50 L160 40 L200 45 L240 30 L280 25 L320 15 L320 90 L0 90 Z"
+          fill="url(#dashGrad)"
+        />
+        <path
+          d="M0 70 L40 60 L80 65 L120 50 L160 40 L200 45 L240 30 L280 25 L320 15"
+          fill="none"
+          stroke="#E30613"
+          strokeWidth="2"
+        />
+      </svg>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(4, 1fr)",
+          gap: 8,
+        }}
+      >
+        {[
+          { l: "Leads", v: 47, c: "#16A34A" },
+          { l: "Qualif.", v: 31, c: "#2563EB" },
+          { l: "Agend.", v: 19, c: "#E30613" },
+          { l: "Fechado", v: 12, c: "#15803D" },
+        ].map((s) => (
+          <div
+            key={s.l}
+            style={{
+              background: "#fff",
+              border: "1px solid var(--slate-200)",
+              borderRadius: 8,
+              padding: "10px 12px",
+            }}
+          >
+            <div
+              style={{
+                fontSize: 9,
+                fontFamily: "var(--font-mono)",
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                color: "var(--slate-500)",
+                fontWeight: 600,
+              }}
+            >
+              {s.l}
+            </div>
+            <div
+              style={{
+                fontFamily: "var(--font-display)",
+                fontWeight: 800,
+                fontSize: 20,
+                color: s.c,
+                marginTop: 2,
+              }}
+            >
+              {s.v}
+            </div>
           </div>
         ))}
       </div>
@@ -217,787 +472,1529 @@ function KanbanCol({ titulo, cor, cards }: { titulo: string; cor: string; cards:
   );
 }
 
-function MiniKpi({ label, valor, cor }: { label: string; valor: string; cor: string }) {
+function WAPhone({ scale = 0.82 }: { scale?: number }) {
+  const [step, setStep] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setStep((s) => (s + 1) % 6), 2400);
+    return () => clearInterval(id);
+  }, []);
+  const messages = [
+    { from: "them", text: "Oi! Quanto custa a vistoria pro Civic 2018?", t: "10:42" },
+    { from: "me", text: "Oi! 👋 Aqui é a Carol da SuperVisão. Você quer cautelar ou laudo de transferência?", t: "10:42" },
+    { from: "them", text: "Cautelar", t: "10:43" },
+    { from: "me", text: "Show! Pro Civic 2018 sai R$ 280. Temos horário hoje 16h ou amanhã 9h. Qual prefere?", t: "10:43" },
+    { from: "them", text: "Hoje 16h", t: "10:44" },
+    { from: "me", text: "Fechado ✅ Confirmado. Te mando lembrete 1h antes.", t: "10:44" },
+  ];
+  const visible = messages.slice(0, step + 1);
   return (
-    <div>
-      <div className={`text-2xl font-bold ${cor}`}>{valor}</div>
-      <div className="text-[9px] uppercase font-medium text-slate-500">{label}</div>
+    <div
+      className="phone"
+      style={{ transform: `scale(${scale})`, transformOrigin: "bottom right" }}
+    >
+      <div className="phone-screen">
+        <div className="wa-header">
+          <div className="wa-avatar">C</div>
+          <div>
+            <div className="wa-name">Carol · SuperVisão Mooca</div>
+            <div className="wa-status">online · digitando</div>
+          </div>
+        </div>
+        <div className="wa-msgs">
+          {visible.map((m, i) => (
+            <div
+              key={i}
+              className={`wa-bubble ${m.from}`}
+              style={{
+                animation: i === visible.length - 1 ? "fadeIn 0.4s" : "none",
+              }}
+            >
+              {m.text}
+              <span className="meta">
+                {m.t} {m.from === "me" && "✓✓"}
+              </span>
+            </div>
+          ))}
+          {step < messages.length - 1 && (
+            <div className="wa-typing">
+              <span />
+              <span />
+              <span />
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
 
-// ============================== BADGE REDE ==============================
-function BadgeRede() {
-  return (
-    <section className="py-8 border-b border-slate-200 bg-slate-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <p className="text-center text-xs uppercase tracking-wider text-slate-500 font-medium mb-4">
-          Já em uso em unidades da rede
-        </p>
-        <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2 text-sm font-semibold text-slate-400">
-          <span>Mooca</span>
-          <span className="text-slate-200">·</span>
-          <span>Penha</span>
-          <span className="text-slate-200">·</span>
-          <span>Butantã</span>
-          <span className="text-slate-200">·</span>
-          <span>Morumbi</span>
-          <span className="text-slate-200">·</span>
-          <span>Vila Leopoldina</span>
-          <span className="text-slate-200">·</span>
-          <span>Barueri</span>
-          <span className="text-slate-200">·</span>
-          <span>Itajaí</span>
-          <span className="text-slate-200">·</span>
-          <span>Araras</span>
-          <span className="text-slate-200">·</span>
-          <span className="text-[#E31E24]">+16 unidades</span>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// ============================== PROBLEMA ==============================
+// ============== PROBLEMA ==============
 function Problema() {
-  const dores = [
+  const clusters = [
     {
-      icon: Smartphone,
-      titulo: "WhatsApp lotado, atendente perdido",
-      desc: "Cada vendedor tem o próprio celular, conversas espalhadas. Quando a pessoa sai, o cliente vai junto.",
+      label: "Caos",
+      heading: "Conversas espalhadas",
+      items: [
+        "Cada atendente com WhatsApp próprio",
+        "Cliente atende com 2 pessoas, ninguém sabe",
+        "Histórico some quando alguém sai",
+      ],
     },
     {
-      icon: Search,
-      titulo: "Sem saber em que pé tá cada cliente",
-      desc: "Pergunta no grupo \"alguém atendeu o fulano?\" e ninguém sabe responder. Lead some no meio do caos.",
+      label: "Perda",
+      heading: "Lead que evapora",
+      items: [
+        "Sem follow-up automático",
+        "Cliente sumiu, ninguém percebeu",
+        "Não dá pra cobrar o time do que não vê",
+      ],
     },
     {
-      icon: Activity,
-      titulo: "Cliente sumiu sem ninguém perceber",
-      desc: "Sem follow-up automático, oportunidade evapora. Você só descobre quando recebe a reclamação do concorrente fechar com ele.",
-    },
-    {
-      icon: BarChart3,
-      titulo: "Vendedor diz que vendeu, você acredita?",
-      desc: "Sem números reais, fica tudo no \"achismo\". Quem é o melhor vendedor? Quem precisa de treinamento? Ninguém sabe.",
+      label: "Achismo",
+      heading: "Sem números reais",
+      items: [
+        "Quem é o melhor vendedor?",
+        "Quantos leads viraram fechamento?",
+        "Qual o ticket médio da unidade?",
+      ],
     },
   ];
+
   return (
-    <section id="problema" className="py-20 sm:py-24 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="text-center max-w-2xl mx-auto mb-14">
-          <div className="inline-block bg-red-50 text-[#E31E24] text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full mb-4">
-            Se identifica?
-          </div>
-          <h2 className="text-3xl sm:text-4xl font-bold text-[#1B2A4A] leading-tight">
-            Esses problemas estão custando vendas da sua unidade
+    <section className="section dark section-pad" id="problema">
+      <div className="container">
+        <Reveal>
+          <span className="eyebrow on-dark">
+            <span className="dot" /> O problema hoje
+          </span>
+        </Reveal>
+        <Reveal delay={1} style={{ marginTop: 18 }}>
+          <h2 className="h-section" style={{ maxWidth: 900 }}>
+            Sua operação tá no <em className="soffia-mark on-dark">escuro</em>.
           </h2>
-          <p className="mt-4 text-slate-600">
-            Atender no WhatsApp comum funciona até a unidade crescer. Aí vira
-            caos.
+        </Reveal>
+        <Reveal delay={2} style={{ marginTop: 16 }}>
+          <p
+            className="lead on-dark"
+            style={{ maxWidth: 600 }}
+          >
+            WhatsApp comum funciona até a unidade crescer. Aí vira gargalo, vira
+            perda, vira chute. Você reconhece estes problemas?
           </p>
-        </div>
-        <div className="grid sm:grid-cols-2 gap-4">
-          {dores.map((d) => {
-            const Icon = d.icon;
-            return (
-              <div
-                key={d.titulo}
-                className="bg-slate-50 border border-slate-200 rounded-xl p-6 hover:border-red-300 transition-colors"
-              >
-                <div className="h-10 w-10 rounded-lg bg-red-50 flex items-center justify-center mb-3">
-                  <Icon className="h-5 w-5 text-[#E31E24]" />
+        </Reveal>
+
+        <div
+          style={{
+            marginTop: 56,
+            display: "grid",
+            gridTemplateColumns: "repeat(3, 1fr)",
+            gap: 20,
+          }}
+        >
+          {clusters.map((c, idx) => (
+            <Reveal key={c.label} delay={(idx + 2) as 2 | 3 | 4}>
+              <div className="card on-dark" style={{ height: "100%" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 10,
+                    marginBottom: 16,
+                  }}
+                >
+                  <span
+                    style={{
+                      width: 32,
+                      height: 32,
+                      borderRadius: 8,
+                      background: "rgba(227,6,19,0.16)",
+                      color: "var(--sv-red)",
+                      display: "grid",
+                      placeItems: "center",
+                      fontFamily: "var(--font-mono)",
+                      fontSize: 11,
+                      fontWeight: 700,
+                    }}
+                  >
+                    0{idx + 1}
+                  </span>
+                  <span
+                    style={{
+                      fontFamily: "var(--font-mono)",
+                      fontSize: 11,
+                      letterSpacing: "0.10em",
+                      textTransform: "uppercase",
+                      color: "rgba(255,255,255,0.6)",
+                      fontWeight: 600,
+                    }}
+                  >
+                    {c.label}
+                  </span>
                 </div>
-                <h3 className="font-bold text-[#1B2A4A] text-lg mb-1.5">
-                  {d.titulo}
+                <h3
+                  style={{
+                    fontFamily: "var(--font-display)",
+                    fontSize: 22,
+                    fontWeight: 700,
+                    color: "#fff",
+                    marginBottom: 16,
+                    letterSpacing: "-0.02em",
+                  }}
+                >
+                  {c.heading}
                 </h3>
-                <p className="text-sm text-slate-600 leading-relaxed">{d.desc}</p>
+                <ul
+                  style={{
+                    listStyle: "none",
+                    padding: 0,
+                    margin: 0,
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 10,
+                  }}
+                >
+                  {c.items.map((item) => (
+                    <li
+                      key={item}
+                      style={{
+                        display: "flex",
+                        alignItems: "flex-start",
+                        gap: 10,
+                        fontSize: 14.5,
+                        color: "rgba(255,255,255,0.78)",
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      <span
+                        style={{
+                          color: "var(--sv-red)",
+                          marginTop: 2,
+                          fontWeight: 900,
+                        }}
+                      >
+                        ?
+                      </span>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
               </div>
-            );
-          })}
+            </Reveal>
+          ))}
         </div>
       </div>
     </section>
   );
 }
 
-// ============================== SOLUÇÃO ==============================
+// ============== SOLUÇÃO ==============
 function Solucao() {
   return (
-    <section className="py-20 sm:py-24 bg-slate-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="text-center max-w-2xl mx-auto mb-14">
-          <div className="inline-block bg-emerald-50 text-emerald-700 text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full mb-4">
-            A virada
-          </div>
-          <h2 className="text-3xl sm:text-4xl font-bold text-[#1B2A4A] leading-tight">
-            Um único painel pra todo o atendimento da unidade
+    <section className="section section-pad" id="solucao">
+      <div className="container">
+        <Reveal>
+          <span className="eyebrow">
+            <span className="dot" /> A virada de chave
+          </span>
+        </Reveal>
+        <Reveal delay={1} style={{ marginTop: 18 }}>
+          <h2 className="h-section" style={{ maxWidth: 920 }}>
+            Um único painel pra{" "}
+            <em className="soffia-mark">toda</em> a unidade.
           </h2>
-          <p className="mt-4 text-slate-600">
-            O CRM SuperVisão centraliza WhatsApp, controle de vendas, agenda e
-            relatórios. Você vê tudo em tempo real.
+        </Reveal>
+        <Reveal delay={2} style={{ marginTop: 16 }}>
+          <p className="lead">
+            Recepção, vistoriadores, gestor — todo mundo no mesmo lugar, com a
+            visão certa pra cada papel. Chega de planilha, caderno e
+            atendimento duplicado.
           </p>
-        </div>
-        <div className="grid md:grid-cols-2 gap-4">
-          {/* Antes */}
-          <div className="bg-white border-2 border-red-200 rounded-2xl p-6">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="h-7 w-7 rounded-full bg-red-100 flex items-center justify-center">
-                <X className="h-4 w-4 text-red-600" />
-              </div>
-              <h3 className="font-bold text-red-900">Antes (sem CRM)</h3>
-            </div>
-            <ul className="space-y-2.5 text-sm text-slate-700">
-              {[
-                "1 WhatsApp por atendente, sem visibilidade",
-                "Controle de vendas em planilha que ninguém atualiza",
-                "Cliente esquecido, sem follow-up automático",
-                "Cliente recebe atendimento duplicado",
-                "Sem números do time comercial",
-                "Quando atendente sai, leva contatos com ele",
-              ].map((t) => (
-                <li key={t} className="flex items-start gap-2">
-                  <span className="text-red-500 shrink-0 mt-0.5">✗</span>
-                  <span>{t}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
+        </Reveal>
 
-          {/* Depois */}
-          <div className="bg-white border-2 border-emerald-200 rounded-2xl p-6">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="h-7 w-7 rounded-full bg-emerald-100 flex items-center justify-center">
-                <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+        <div
+          style={{
+            marginTop: 64,
+            display: "grid",
+            gridTemplateColumns: "repeat(3, 1fr)",
+            gap: 20,
+          }}
+        >
+          {[
+            {
+              t: "Caixa única",
+              d: "Todos os WhatsApp da unidade num só painel. Atendentes vivem aqui.",
+              ic: "💬",
+            },
+            {
+              t: "Kanban de vendas",
+              d: "Lead → Interesse → Qualificado → Agendado → Fechado. Visual e real.",
+              ic: "📊",
+            },
+            {
+              t: "Números de verdade",
+              d: "Quem vendeu o quê, ticket médio, conversão. Sem achismo.",
+              ic: "🎯",
+            },
+          ].map((f, i) => (
+            <Reveal key={f.t} delay={(i + 2) as 2 | 3 | 4}>
+              <div className="card">
+                <div
+                  style={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: 10,
+                    background:
+                      "linear-gradient(135deg, var(--sv-red-soft) 0%, #FFD8DC 100%)",
+                    display: "grid",
+                    placeItems: "center",
+                    fontSize: 22,
+                    marginBottom: 18,
+                  }}
+                >
+                  {f.ic}
+                </div>
+                <h3
+                  style={{
+                    fontFamily: "var(--font-display)",
+                    fontSize: 22,
+                    fontWeight: 700,
+                    marginBottom: 8,
+                    letterSpacing: "-0.02em",
+                  }}
+                >
+                  {f.t}
+                </h3>
+                <p
+                  style={{
+                    color: "var(--slate-600)",
+                    fontSize: 15,
+                    lineHeight: 1.5,
+                    margin: 0,
+                  }}
+                >
+                  {f.d}
+                </p>
               </div>
-              <h3 className="font-bold text-emerald-900">Com CRM SuperVisão</h3>
-            </div>
-            <ul className="space-y-2.5 text-sm text-slate-700">
-              {[
-                "Caixa única com todas as conversas da unidade",
-                "Kanban visual mostra em que etapa cada cliente está",
-                "Etiquetas e automação categorizam sozinho",
-                "Atribuição automática — sem atendimento duplicado",
-                "Relatórios mostram quem está vendendo e quanto",
-                "Contatos ficam da unidade, não do atendente",
-              ].map((t) => (
-                <li key={t} className="flex items-start gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
-                  <span>{t}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
+            </Reveal>
+          ))}
         </div>
       </div>
     </section>
   );
 }
 
-// ============================== FEATURES ==============================
-function Features() {
-  const features = [
+// ============== FUNIL ==============
+function Funil() {
+  const steps = [
     {
-      icon: Inbox,
-      titulo: "Caixa de entrada unificada",
-      desc: "Todas as conversas dos WhatsApp da unidade num só lugar. Multi-atendente com permissões individuais.",
+      n: 1,
+      t: "Cliente chega no WhatsApp",
+      d: "Atendente vê o lead na fila já etiquetado com origem (Google, Meta, Indicação) e tipo de serviço.",
     },
     {
-      icon: Kanban,
-      titulo: "Kanban de vendas visual",
-      desc: "Lead → Interesse → Qualificado → Agendado → Fechado. Arrasta e solta, vê funil real em tempo real.",
+      n: 2,
+      t: "Time qualifica e orça",
+      d: "Painel mostra preço por serviço e unidade. Histórico completo, custom attributes, base de conhecimento.",
     },
     {
-      icon: UsersIcon,
-      titulo: "Multi-atendente com controle",
-      desc: "Admin, agente, gestor. Cada perfil vê o que precisa ver. Atribuição automática evita duplicação.",
+      n: 3,
+      t: "Agenda automática",
+      d: "Cliente confirma horário, agenda já bloqueia slot. Lembretes 1h antes pra reduzir no-show.",
     },
     {
-      icon: Calendar,
-      titulo: "Agenda integrada",
-      desc: "Agendamentos confirmados pelo bot, lembretes automáticos, redução de no-show.",
+      n: 4,
+      t: "Cliente comparece, vistoria roda",
+      d: "Status muda automático. Time da unidade vê tudo no painel sem precisar perguntar.",
     },
     {
-      icon: BarChart3,
-      titulo: "Relatórios em tempo real",
-      desc: "Quantos leads hoje, taxa de conversão, ticket médio, ranking de vendedores. Dashboard executivo.",
-    },
-    {
-      icon: Tag,
-      titulo: "Etiquetas e automação",
-      desc: "Categoriza cliente sozinho (vistoria cautelar, transferência, moto, etc). Time foca em vender.",
+      n: 5,
+      t: "Fechamento auditado",
+      d: "Conferência com API do laudo. Métrica de conversão real, ticket por origem, performance do time.",
     },
   ];
   return (
-    <section id="features" className="py-20 sm:py-24 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="text-center max-w-2xl mx-auto mb-14">
-          <div className="inline-block bg-[#1B2A4A]/5 text-[#1B2A4A] text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full mb-4">
-            Recursos
-          </div>
-          <h2 className="text-3xl sm:text-4xl font-bold text-[#1B2A4A] leading-tight">
-            Tudo que sua unidade precisa em um único painel
+    <section className="section section-pad tinted" id="funil">
+      <div className="container">
+        <Reveal>
+          <span className="eyebrow">
+            <span className="dot" /> Do lead ao faturamento
+          </span>
+        </Reveal>
+        <Reveal delay={1} style={{ marginTop: 18 }}>
+          <h2 className="h-section" style={{ maxWidth: 900 }}>
+            Como o CRM transforma <em className="soffia-mark">caos em previsibilidade</em>.
           </h2>
-        </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {features.map((f) => {
-            const Icon = f.icon;
-            return (
-              <div
-                key={f.titulo}
-                className="bg-white border border-slate-200 rounded-xl p-6 hover:shadow-md hover:border-[#1B2A4A]/30 transition-all"
-              >
-                <div className="h-11 w-11 rounded-lg bg-gradient-to-br from-[#1B2A4A] to-[#243556] flex items-center justify-center mb-4">
-                  <Icon className="h-5 w-5 text-white" />
+        </Reveal>
+
+        <div
+          className="funnel-track"
+          style={{
+            marginTop: 56,
+            display: "flex",
+            flexDirection: "column",
+            gap: 24,
+            maxWidth: 820,
+            position: "relative",
+          }}
+        >
+          <FunnelLine />
+          {steps.map((s, i) => (
+            <Reveal key={s.n} delay={((i % 5) + 1) as 1 | 2 | 3 | 4 | 5}>
+              <div style={{ display: "flex", gap: 24, alignItems: "flex-start" }}>
+                <div className="funnel-num">{s.n}</div>
+                <div style={{ flex: 1, paddingTop: 6 }}>
+                  <h3
+                    style={{
+                      fontFamily: "var(--font-display)",
+                      fontSize: 22,
+                      fontWeight: 700,
+                      marginBottom: 6,
+                      letterSpacing: "-0.02em",
+                    }}
+                  >
+                    {s.t}
+                  </h3>
+                  <p
+                    style={{
+                      color: "var(--slate-600)",
+                      fontSize: 15,
+                      lineHeight: 1.55,
+                      margin: 0,
+                      maxWidth: 600,
+                    }}
+                  >
+                    {s.d}
+                  </p>
                 </div>
-                <h3 className="font-bold text-[#1B2A4A] text-lg mb-2">
-                  {f.titulo}
-                </h3>
-                <p className="text-sm text-slate-600 leading-relaxed">{f.desc}</p>
               </div>
-            );
-          })}
+            </Reveal>
+          ))}
         </div>
       </div>
     </section>
   );
 }
 
-// ============================== DEMO ==============================
-function Demo() {
+function FunnelLine() {
+  const [ref, shown] = useReveal();
   return (
-    <section id="demo" className="py-20 sm:py-24 bg-slate-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="text-center max-w-2xl mx-auto mb-12">
-          <h2 className="text-3xl sm:text-4xl font-bold text-[#1B2A4A] leading-tight">
-            É assim que sua unidade vai parecer
-          </h2>
-          <p className="mt-4 text-slate-600">
-            Painel real — não é mockup. Cada card é um cliente, cada coluna é
-            uma etapa de venda.
-          </p>
-        </div>
-
-        {/* Frame "navegador" com painel */}
-        <div className="bg-[#1B2A4A] rounded-2xl p-3 shadow-2xl max-w-5xl mx-auto">
-          <div className="flex items-center gap-1.5 px-2 py-1.5">
-            <div className="h-3 w-3 rounded-full bg-red-400/60" />
-            <div className="h-3 w-3 rounded-full bg-yellow-400/60" />
-            <div className="h-3 w-3 rounded-full bg-emerald-400/60" />
-            <div className="ml-3 text-[11px] text-slate-300">
-              controleimplementa-aocrm.vercel.app
-            </div>
-          </div>
-          <div className="bg-[#F8FAFC] rounded-lg p-6">
-            {/* Header simulado */}
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h3 className="font-bold text-[#1B2A4A] text-lg">Centro de Controle</h3>
-                <p className="text-xs text-slate-500">SuperVisão Mooca</p>
-              </div>
-              <div className="flex gap-2">
-                <div className="px-3 py-1.5 bg-white border border-slate-200 rounded text-xs">
-                  📅 Hoje
-                </div>
-              </div>
-            </div>
-            {/* KPIs */}
-            <div className="grid grid-cols-4 gap-2 mb-4">
-              <DemoKpi label="Leads hoje" valor="14" trend="+3" />
-              <DemoKpi label="Em andamento" valor="28" trend="+5" />
-              <DemoKpi label="Agendados" valor="12" trend="+2" />
-              <DemoKpi label="Fechados" valor="7" trend="+1" />
-            </div>
-            {/* Kanban */}
-            <div className="grid grid-cols-5 gap-2">
-              {[
-                { titulo: "Lead", cor: "#3B82F6", n: 14 },
-                { titulo: "Interesse", cor: "#F59E0B", n: 9 },
-                { titulo: "Qualificado", cor: "#A855F7", n: 6 },
-                { titulo: "Agendado", cor: "#06B6D4", n: 12 },
-                { titulo: "Fechado", cor: "#10B981", n: 7 },
-              ].map((c) => (
-                <div key={c.titulo} className="bg-white rounded p-2 border border-slate-200">
-                  <div className="flex items-center gap-1.5 mb-2">
-                    <div className="h-1.5 w-1.5 rounded-full" style={{ background: c.cor }} />
-                    <span className="text-[10px] font-bold uppercase text-slate-500">
-                      {c.titulo}
-                    </span>
-                    <span className="ml-auto text-[9px] font-bold text-slate-400">{c.n}</span>
-                  </div>
-                  <div className="space-y-1.5">
-                    {Array.from({ length: Math.min(c.n, 4) }).map((_, i) => (
-                      <div key={i} className="bg-slate-50 rounded p-1.5 border border-slate-100">
-                        <div className="h-1.5 w-3/4 bg-slate-300 rounded mb-1" />
-                        <div className="h-1 w-1/2 bg-slate-200 rounded" />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function DemoKpi({ label, valor, trend }: { label: string; valor: string; trend: string }) {
-  return (
-    <div className="bg-white rounded p-2 border border-slate-200">
-      <div className="text-[9px] uppercase font-bold text-slate-500">{label}</div>
-      <div className="flex items-baseline gap-1 mt-0.5">
-        <span className="text-xl font-bold text-[#1B2A4A]">{valor}</span>
-        <span className="text-[9px] text-emerald-600 font-bold">{trend}</span>
-      </div>
+    <div
+      ref={ref as unknown as React.Ref<HTMLDivElement>}
+      className={`funnel-line ${shown ? "in" : ""}`}
+    >
+      <div className="progress" />
     </div>
   );
 }
 
-// ============================== PARA QUEM ==============================
-function ParaQuem() {
+// ============== ACESSOS / PAPÉIS ==============
+function AcessosSection() {
   const perfis = [
     {
-      titulo: "Franqueado",
-      desc: "Quer ver tudo em tempo real, sem depender de relatório semanal. Saber quanto a unidade tá produzindo agora.",
-      icon: TrendingUp,
+      titulo: "Recepção",
+      desc: "Vê só o que precisa: novas conversas, agendamento, cadastro do cliente. Sem distração com números do mês.",
+      cor: "var(--sv-blue)",
+      bg: "var(--sv-blue-soft)",
+    },
+    {
+      titulo: "Vistoriador",
+      desc: "Acessa a fila do dia (presencial + delivery), checa endereço, marca como concluído. Tudo no celular.",
+      cor: "var(--sv-amber)",
+      bg: "var(--sv-amber-soft)",
     },
     {
       titulo: "Time Comercial",
-      desc: "Quer focar em vender, não em organizar planilha. Sistema empurra cliente na fila certa.",
-      icon: Zap,
+      desc: "Kanban completo, follow-up de quem sumiu, ranking, comissão calculada. Foco em fechar.",
+      cor: "var(--sv-red)",
+      bg: "var(--sv-red-soft)",
     },
     {
-      titulo: "Atendente",
-      desc: "Quer abrir o painel e já saber quem responder primeiro. Atribuição automática, sem confusão.",
-      icon: Phone,
-    },
-    {
-      titulo: "Gestor",
-      desc: "Quer relatórios reais pra tomar decisão. Quem performa, quem precisa treinar, onde tá o gargalo.",
-      icon: BarChart3,
+      titulo: "Franqueado / Gestor",
+      desc: "Visão executiva: faturamento ao vivo, gargalos do funil, performance individual. Decisão por dado.",
+      cor: "var(--sv-plum)",
+      bg: "var(--sv-plum-soft)",
     },
   ];
+
   return (
-    <section className="py-20 sm:py-24 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="text-center max-w-2xl mx-auto mb-14">
-          <h2 className="text-3xl sm:text-4xl font-bold text-[#1B2A4A] leading-tight">
-            Pensado pra cada papel da unidade
+    <section className="section section-pad" id="acessos">
+      <div className="container">
+        <Reveal>
+          <span className="eyebrow">
+            <span className="dot" /> Acessos por perfil
+          </span>
+        </Reveal>
+        <Reveal delay={1} style={{ marginTop: 18 }}>
+          <h2 className="h-section" style={{ maxWidth: 900 }}>
+            Cada um vê o que <em className="soffia-mark">precisa ver</em>.
           </h2>
-        </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {perfis.map((p) => {
-            const Icon = p.icon;
-            return (
-              <div
-                key={p.titulo}
-                className="bg-gradient-to-br from-slate-50 to-white border border-slate-200 rounded-xl p-5"
-              >
-                <div className="h-9 w-9 rounded-lg bg-[#E31E24]/10 flex items-center justify-center mb-3">
-                  <Icon className="h-4.5 w-4.5 text-[#E31E24]" />
+        </Reveal>
+        <Reveal delay={2} style={{ marginTop: 16 }}>
+          <p className="lead">
+            Permissões granulares por perfil. Atendente não vê faturamento. Gestor
+            não precisa abrir conversa. Cada papel tem sua tela.
+          </p>
+        </Reveal>
+
+        <div
+          style={{
+            marginTop: 56,
+            display: "grid",
+            gridTemplateColumns: "repeat(2, 1fr)",
+            gap: 16,
+          }}
+        >
+          {perfis.map((p, i) => (
+            <Reveal key={p.titulo} delay={((i % 4) + 2) as 2 | 3 | 4 | 5}>
+              <div className="card" style={{ height: "100%" }}>
+                <div
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 8,
+                    padding: "6px 12px",
+                    borderRadius: 999,
+                    background: p.bg,
+                    color: p.cor,
+                    fontFamily: "var(--font-mono)",
+                    fontSize: 11,
+                    fontWeight: 700,
+                    letterSpacing: "0.08em",
+                    textTransform: "uppercase",
+                    marginBottom: 14,
+                  }}
+                >
+                  {p.titulo}
                 </div>
-                <h3 className="font-bold text-[#1B2A4A] mb-2">{p.titulo}</h3>
-                <p className="text-sm text-slate-600 leading-relaxed">{p.desc}</p>
+                <p
+                  style={{
+                    color: "var(--slate-700)",
+                    fontSize: 15.5,
+                    lineHeight: 1.55,
+                    margin: 0,
+                  }}
+                >
+                  {p.desc}
+                </p>
               </div>
-            );
-          })}
+            </Reveal>
+          ))}
         </div>
       </div>
     </section>
   );
 }
 
-// ============================== COMO FUNCIONA ==============================
-function ComoFunciona() {
-  const passos = [
-    {
-      n: "1",
-      titulo: "Você cadastra a unidade",
-      desc: "Preenche um formulário rápido com dados da unidade e do time. Leva ~5 minutos.",
-      tempo: "5 min",
-    },
-    {
-      n: "2",
-      titulo: "A gente configura tudo",
-      desc: "Criamos painel, conectamos WhatsApp, cadastramos atendentes, montamos funil e etiquetas.",
-      tempo: "~2 dias",
-    },
-    {
-      n: "3",
-      titulo: "Treinamos seu time",
-      desc: "Reunião ao vivo (1h) ensinando o time a usar. Suporte direto via grupo de WhatsApp.",
-      tempo: "1 hora",
-    },
-    {
-      n: "4",
-      titulo: "Sua unidade começa a vender melhor",
-      desc: "Time foca em conversar, sistema cuida do controle. Métricas começam a chegar no dia 1.",
-      tempo: "Dia 1",
-    },
-  ];
+// ============== AGENDA ==============
+function AgendaSection() {
   return (
-    <section id="como-funciona" className="py-20 sm:py-24 bg-slate-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="text-center max-w-2xl mx-auto mb-14">
-          <div className="inline-block bg-[#1B2A4A]/5 text-[#1B2A4A] text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full mb-4">
-            Processo simples
+    <section className="section section-pad tinted" id="agenda">
+      <div className="container">
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1.1fr",
+            gap: 64,
+            alignItems: "center",
+          }}
+        >
+          <div>
+            <Reveal>
+              <span className="eyebrow">
+                <span className="dot" /> Agenda integrada
+              </span>
+            </Reveal>
+            <Reveal delay={1} style={{ marginTop: 18 }}>
+              <h2 className="h-section">
+                Uma agenda.{" "}
+                <em className="soffia-mark">Presencial</em> e delivery.
+              </h2>
+            </Reveal>
+            <Reveal delay={2} style={{ marginTop: 16 }}>
+              <p className="lead">
+                Time comercial agenda direto pelo painel. Cliente recebe
+                confirmação no WhatsApp e lembrete 1h antes. Sem no-show, sem
+                planilha paralela.
+              </p>
+            </Reveal>
+            <Reveal delay={3} style={{ marginTop: 28 }}>
+              <ul
+                style={{
+                  listStyle: "none",
+                  padding: 0,
+                  margin: 0,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 12,
+                }}
+              >
+                {[
+                  "Agendamento presencial e delivery na mesma tela",
+                  "Bloqueio automático de horário ao confirmar",
+                  "Lembrete automático 1h antes (reduz no-show)",
+                  "Visão por dia, semana ou vistoriador",
+                  "Sincronização com o atendimento (sem retrabalho)",
+                ].map((t) => (
+                  <li
+                    key={t}
+                    style={{
+                      display: "flex",
+                      gap: 12,
+                      fontSize: 15.5,
+                      color: "var(--slate-700)",
+                      alignItems: "flex-start",
+                    }}
+                  >
+                    <span
+                      style={{
+                        width: 22,
+                        height: 22,
+                        borderRadius: "50%",
+                        background: "var(--sv-red)",
+                        color: "#fff",
+                        display: "grid",
+                        placeItems: "center",
+                        flexShrink: 0,
+                        marginTop: 2,
+                      }}
+                    >
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                        <path d="m5 12 5 5L20 7" />
+                      </svg>
+                    </span>
+                    {t}
+                  </li>
+                ))}
+              </ul>
+            </Reveal>
           </div>
-          <h2 className="text-3xl sm:text-4xl font-bold text-[#1B2A4A] leading-tight">
-            Em poucos dias sua unidade tá no ar
-          </h2>
+          <Reveal delay={3}>
+            <AgendaMockup />
+          </Reveal>
         </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 relative">
-          {passos.map((p, i) => (
-            <div key={p.n} className="relative">
-              <div className="bg-white border border-slate-200 rounded-xl p-5 h-full">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="h-9 w-9 rounded-full bg-gradient-to-br from-[#1B2A4A] to-[#E31E24] text-white font-bold flex items-center justify-center">
-                    {p.n}
-                  </div>
-                  <span className="text-[10px] uppercase font-bold tracking-wider text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">
-                    {p.tempo}
-                  </span>
-                </div>
-                <h3 className="font-bold text-[#1B2A4A] mb-1.5">{p.titulo}</h3>
-                <p className="text-sm text-slate-600 leading-relaxed">{p.desc}</p>
-              </div>
-              {i < passos.length - 1 && (
-                <ArrowRight className="hidden lg:block absolute top-1/2 -right-3 h-5 w-5 text-slate-300 -translate-y-1/2" />
-              )}
+      </div>
+    </section>
+  );
+}
+
+function AgendaMockup() {
+  const slots = [
+    { h: "09:00", c: "Civic 2018 — Carol", t: "presencial", st: "fechado" },
+    { h: "10:30", c: "Onix — João S.", t: "presencial", st: "fechado" },
+    { h: "11:00", c: "HB20 — Marcos R.", t: "delivery", st: "qual" },
+    { h: "14:00", c: "Corolla — Patrícia", t: "presencial", st: "fechado" },
+    { h: "15:30", c: "Compass — Letícia", t: "delivery", st: "agend" },
+    { h: "16:00", c: "Civic — Rafael F.", t: "presencial", st: "agend" },
+  ];
+  const colorMap: Record<string, string> = {
+    fechado: "var(--st-green-soft)",
+    qual: "var(--st-blue-soft)",
+    agend: "var(--sv-red-soft)",
+  };
+  const textMap: Record<string, string> = {
+    fechado: "#166534",
+    qual: "#1D4ED8",
+    agend: "var(--sv-red)",
+  };
+  return (
+    <div className="mockup">
+      <div className="mockup-bar">
+        <span className="dot r" />
+        <span className="dot y" />
+        <span className="dot g" />
+        <span className="url">controle.supervisao.com/agenda</span>
+      </div>
+      <div style={{ padding: 20, background: "#fff" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 16,
+          }}
+        >
+          <div>
+            <div
+              style={{
+                fontSize: 10,
+                fontFamily: "var(--font-mono)",
+                color: "var(--slate-500)",
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                fontWeight: 600,
+              }}
+            >
+              Quinta · 30/04
+            </div>
+            <div
+              style={{
+                fontFamily: "var(--font-display)",
+                fontSize: 24,
+                fontWeight: 800,
+                letterSpacing: "-0.02em",
+                color: "var(--navy)",
+              }}
+            >
+              6 agendamentos
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: 6 }}>
+            <span
+              style={{
+                padding: "5px 10px",
+                borderRadius: 6,
+                background: "var(--st-green-soft)",
+                color: "#166534",
+                fontSize: 10,
+                fontFamily: "var(--font-mono)",
+                fontWeight: 700,
+              }}
+            >
+              3 PRESENCIAL
+            </span>
+            <span
+              style={{
+                padding: "5px 10px",
+                borderRadius: 6,
+                background: "var(--sv-plum-soft)",
+                color: "#7E22CE",
+                fontSize: 10,
+                fontFamily: "var(--font-mono)",
+                fontWeight: 700,
+              }}
+            >
+              3 DELIVERY
+            </span>
+          </div>
+        </div>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 6,
+          }}
+        >
+          {slots.map((s) => (
+            <div
+              key={s.h}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+                padding: "10px 12px",
+                borderRadius: 10,
+                background: "var(--slate-50)",
+                border: "1px solid var(--slate-200)",
+              }}
+            >
+              <span
+                style={{
+                  fontFamily: "var(--font-mono)",
+                  fontWeight: 700,
+                  fontSize: 12,
+                  color: "var(--navy)",
+                  width: 44,
+                }}
+              >
+                {s.h}
+              </span>
+              <span
+                style={{
+                  flex: 1,
+                  fontSize: 13,
+                  color: "var(--slate-700)",
+                  fontWeight: 500,
+                }}
+              >
+                {s.c}
+              </span>
+              <span
+                style={{
+                  padding: "3px 8px",
+                  borderRadius: 5,
+                  background: s.t === "delivery" ? "var(--sv-plum-soft)" : "var(--slate-100)",
+                  color: s.t === "delivery" ? "#7E22CE" : "var(--slate-600)",
+                  fontSize: 9,
+                  fontFamily: "var(--font-mono)",
+                  fontWeight: 700,
+                  letterSpacing: "0.06em",
+                  textTransform: "uppercase",
+                }}
+              >
+                {s.t}
+              </span>
+              <span
+                style={{
+                  padding: "3px 8px",
+                  borderRadius: 5,
+                  background: colorMap[s.st],
+                  color: textMap[s.st],
+                  fontSize: 9,
+                  fontFamily: "var(--font-mono)",
+                  fontWeight: 700,
+                  letterSpacing: "0.06em",
+                  textTransform: "uppercase",
+                }}
+              >
+                {s.st === "fechado"
+                  ? "fechado"
+                  : s.st === "qual"
+                  ? "qualif"
+                  : "agend"}
+              </span>
             </div>
           ))}
         </div>
-        <div className="text-center mt-10">
-          <Link
-            href={CTA_CADASTRO}
-            className="inline-flex items-center gap-2 bg-[#E31E24] hover:bg-[#C41A1F] text-white font-semibold px-6 py-3 rounded-lg transition-colors"
+      </div>
+    </div>
+  );
+}
+
+// ============== PAINEL ==============
+function Painel() {
+  return (
+    <section className="section dark section-pad" id="painel">
+      <div className="container">
+        <Reveal>
+          <span className="eyebrow on-dark">
+            <span className="dot" /> Painel em tempo real
+          </span>
+        </Reveal>
+        <Reveal delay={1} style={{ marginTop: 18 }}>
+          <h2 className="h-section" style={{ maxWidth: 900 }}>
+            O painel que <em className="soffia-mark on-dark">substitui</em>{" "}
+            planilha, caderno e achismo.
+          </h2>
+        </Reveal>
+        <Reveal delay={2} style={{ marginTop: 16 }}>
+          <p className="lead on-dark" style={{ maxWidth: 720 }}>
+            Indicadores que sua unidade passa a ter no momento que ativa o CRM.
+          </p>
+        </Reveal>
+
+        <div
+          style={{
+            marginTop: 64,
+            display: "grid",
+            gridTemplateColumns: "repeat(4, 1fr)",
+            gap: 16,
+          }}
+        >
+          {[
+            { v: 47, suf: "", label: "Leads hoje" },
+            { v: 91, suf: "%", label: "Comparecimento" },
+            { v: 312, pre: "R$", label: "Ticket médio" },
+            { v: 67, suf: "%", label: "Conversão" },
+          ].map((kpi, i) => (
+            <Reveal key={kpi.label} delay={((i % 4) + 1) as 1 | 2 | 3 | 4}>
+              <div className="card on-dark" style={{ textAlign: "left" }}>
+                <div
+                  style={{
+                    fontFamily: "var(--font-mono)",
+                    fontSize: 10,
+                    letterSpacing: "0.10em",
+                    textTransform: "uppercase",
+                    color: "rgba(255,255,255,0.55)",
+                    fontWeight: 600,
+                    marginBottom: 8,
+                  }}
+                >
+                  {kpi.label}
+                </div>
+                <Counter to={kpi.v} prefix={kpi.pre || ""} suffix={kpi.suf || ""} />
+              </div>
+            </Reveal>
+          ))}
+        </div>
+
+        <Reveal delay={3} style={{ marginTop: 48 }}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(5, 1fr)",
+              gap: 12,
+            }}
+            className="painel-areas-grid"
           >
-            Começar agora <ArrowRight className="h-4 w-4" />
-          </Link>
+            {[
+              { t: "Conversas", ic: "💬" },
+              { t: "Kanban", ic: "📊" },
+              { t: "Agenda", ic: "📅" },
+              { t: "Relatórios", ic: "📈" },
+              { t: "Etiquetas", ic: "🏷️" },
+            ].map((area) => (
+              <div
+                key={area.t}
+                style={{
+                  padding: "20px 16px",
+                  textAlign: "center",
+                  background: "rgba(255,255,255,0.03)",
+                  border: "1px solid rgba(255,255,255,0.10)",
+                  borderRadius: 12,
+                }}
+              >
+                <div style={{ fontSize: 28, marginBottom: 8 }}>{area.ic}</div>
+                <div
+                  style={{
+                    fontFamily: "var(--font-mono)",
+                    fontSize: 11,
+                    letterSpacing: "0.08em",
+                    textTransform: "uppercase",
+                    color: "rgba(255,255,255,0.85)",
+                    fontWeight: 600,
+                  }}
+                >
+                  {area.t}
+                </div>
+              </div>
+            ))}
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
+// ============== NOT-COMMON CRM ==============
+function NotCommonCRM() {
+  const rows = [
+    { left: "WhatsApp Business solto", right: "Caixa unificada de toda a unidade" },
+    { left: "Sem histórico quando atendente sai", right: "Contatos ficam da unidade" },
+    { left: "Planilha que ninguém atualiza", right: "Kanban em tempo real" },
+    { left: "Sem follow-up automático", right: "Recovery loop integrado" },
+    { left: "Quem fez quanto? Achismo.", right: "Ranking individual de vendas" },
+    { left: "Lojista e cliente final misturados", right: "Etiquetas auto-categorizam" },
+    { left: "Cliente confunde regra/preço", right: "Base de conhecimento centralizada" },
+    { left: "Agenda em caderno separado", right: "Agenda integrada (presencial + delivery)" },
+  ];
+
+  return (
+    <section className="section section-pad" id="diferenca">
+      <div className="container">
+        <Reveal>
+          <span className="eyebrow">
+            <span className="dot" /> O que torna diferente
+          </span>
+        </Reveal>
+        <Reveal delay={1} style={{ marginTop: 18 }}>
+          <h2 className="h-section" style={{ maxWidth: 920 }}>
+            Não é só mais um <em className="soffia-mark">CRM</em>.<br />
+            É o CRM oficial da rede.
+          </h2>
+        </Reveal>
+        <Reveal delay={2} style={{ marginTop: 16 }}>
+          <p className="lead">
+            Construído pra rotina da unidade SuperVisão. Da Matriz pra cada
+            franqueado.
+          </p>
+        </Reveal>
+
+        <Reveal delay={3} style={{ marginTop: 56 }}>
+          <div className="cmp-table">
+            <div className="cmp-col left">
+              <div className="cmp-head">
+                <div
+                  style={{
+                    width: 28,
+                    height: 28,
+                    borderRadius: 8,
+                    background: "var(--sv-red-soft)",
+                    color: "var(--sv-red)",
+                    display: "grid",
+                    placeItems: "center",
+                  }}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <path d="M6 6 18 18M18 6 6 18" />
+                  </svg>
+                </div>
+                <span
+                  style={{
+                    fontFamily: "var(--font-display)",
+                    fontWeight: 700,
+                    fontSize: 17,
+                    letterSpacing: "-0.01em",
+                  }}
+                >
+                  CRM comum / WhatsApp solto
+                </span>
+              </div>
+              {rows.map((r) => (
+                <div className="cmp-row" key={r.left}>
+                  <span className="icon">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                      <path d="M6 6 18 18M18 6 6 18" />
+                    </svg>
+                  </span>
+                  <span style={{ color: "var(--slate-600)" }}>{r.left}</span>
+                </div>
+              ))}
+            </div>
+            <div className="cmp-col right">
+              <div className="cmp-head">
+                <div
+                  style={{
+                    width: 28,
+                    height: 28,
+                    borderRadius: 8,
+                    background: "var(--sv-red)",
+                    color: "#fff",
+                    display: "grid",
+                    placeItems: "center",
+                    fontFamily: "var(--font-display)",
+                    fontWeight: 900,
+                    fontSize: 13,
+                  }}
+                >
+                  S
+                </div>
+                <span
+                  style={{
+                    fontFamily: "var(--font-display)",
+                    fontWeight: 700,
+                    fontSize: 17,
+                    letterSpacing: "-0.01em",
+                  }}
+                >
+                  CRM SuperVisão
+                </span>
+              </div>
+              {rows.map((r) => (
+                <div className="cmp-row" key={r.right}>
+                  <span className="icon">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                      <path d="m5 12 5 5L20 7" />
+                    </svg>
+                  </span>
+                  <span style={{ color: "var(--navy)", fontWeight: 500 }}>
+                    {r.right}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
+// ============== BEFORE/AFTER ==============
+function BeforeAfter() {
+  const before = [
+    "Não sei quantos leads chegaram esse mês",
+    "Atendente perde contato quando sai",
+    "Vendedor diz que vendeu, eu acredito",
+    "Cliente sumiu, ninguém percebeu",
+    "Agenda em caderno e WhatsApp",
+    "Sem ranking, sem comissão real",
+  ];
+  const after = [
+    "Sei o número de leads ao vivo, por origem",
+    "Contatos ficam da unidade, não da pessoa",
+    "Cada venda registrada e auditável",
+    "Follow-up automático em 30min, 1h, 2h, 4h, 23h",
+    "Agenda integrada (presencial + delivery)",
+    "Ranking individual + comissão calculada",
+  ];
+  return (
+    <section className="section section-pad tinted" id="impacto">
+      <div className="container">
+        <Reveal>
+          <span className="eyebrow">
+            <span className="dot" /> O que muda
+          </span>
+        </Reveal>
+        <Reveal delay={1} style={{ marginTop: 18 }}>
+          <h2 className="h-section" style={{ maxWidth: 880 }}>
+            Como sua unidade <em className="soffia-mark">opera depois</em> do CRM.
+          </h2>
+        </Reveal>
+
+        <Reveal delay={2} style={{ marginTop: 56 }}>
+          <div className="before-after">
+            <div className="ba-col before">
+              <span
+                style={{
+                  fontFamily: "var(--font-mono)",
+                  fontSize: 11,
+                  letterSpacing: "0.10em",
+                  textTransform: "uppercase",
+                  color: "rgba(255,255,255,0.5)",
+                  fontWeight: 600,
+                }}
+              >
+                Antes
+              </span>
+              <h3
+                style={{
+                  fontFamily: "var(--font-display)",
+                  fontSize: 28,
+                  fontWeight: 700,
+                  letterSpacing: "-0.02em",
+                  marginTop: 8,
+                  color: "#fff",
+                }}
+              >
+                No escuro
+              </h3>
+              <ul className="ba-list">
+                {before.map((t) => (
+                  <li key={t}>
+                    <span className="ba-icon">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <path d="M6 6 18 18M18 6 6 18" />
+                      </svg>
+                    </span>
+                    {t}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="ba-col after">
+              <span
+                style={{
+                  fontFamily: "var(--font-mono)",
+                  fontSize: 11,
+                  letterSpacing: "0.10em",
+                  textTransform: "uppercase",
+                  color: "var(--sv-red)",
+                  fontWeight: 700,
+                }}
+              >
+                Depois
+              </span>
+              <h3
+                style={{
+                  fontFamily: "var(--font-display)",
+                  fontSize: 28,
+                  fontWeight: 700,
+                  letterSpacing: "-0.02em",
+                  marginTop: 8,
+                  color: "var(--navy)",
+                }}
+              >
+                Operação iluminada
+              </h3>
+              <ul className="ba-list">
+                {after.map((t) => (
+                  <li key={t}>
+                    <span className="ba-icon">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                        <path d="m5 12 5 5L20 7" />
+                      </svg>
+                    </span>
+                    {t}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
+// ============== SOFFIA TEASER ==============
+function SoffiaTeaser() {
+  return (
+    <section className="section section-pad" id="soffia">
+      <div className="container">
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1.2fr 1fr",
+            gap: 64,
+            alignItems: "center",
+          }}
+        >
+          <div>
+            <Reveal>
+              <span className="eyebrow">
+                <span className="dot" /> Em breve
+              </span>
+            </Reveal>
+            <Reveal delay={1} style={{ marginTop: 18 }}>
+              <h2 className="h-section">
+                E quando sua operação crescer,<br />
+                a <em className="soffia-mark">Soffia</em> entra.
+              </h2>
+            </Reveal>
+            <Reveal delay={2} style={{ marginTop: 18 }}>
+              <p className="lead">
+                A IA treinada com tudo da SuperVisão atende 24/7, qualifica,
+                orça via FIPE, agenda. Plugada no mesmo painel. Você não troca
+                de sistema — só liga o turbo.
+              </p>
+            </Reveal>
+            <Reveal delay={3} style={{ marginTop: 24 }}>
+              <a
+                href="https://soffiaiasupervisao.vercel.app/"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 8,
+                  fontFamily: "var(--font-mono)",
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: "var(--sv-red)",
+                  letterSpacing: "0.04em",
+                }}
+              >
+                Conhecer a Soffia →
+              </a>
+            </Reveal>
+          </div>
+          <Reveal delay={2}>
+            <div className="card">
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                  marginBottom: 16,
+                  paddingBottom: 16,
+                  borderBottom: "1px solid var(--slate-200)",
+                }}
+              >
+                <div
+                  style={{
+                    width: 38,
+                    height: 38,
+                    borderRadius: "50%",
+                    background:
+                      "linear-gradient(135deg, var(--sv-red) 0%, #FF3B47 100%)",
+                    display: "grid",
+                    placeItems: "center",
+                    color: "#fff",
+                    fontFamily: "var(--font-display)",
+                    fontWeight: 900,
+                  }}
+                >
+                  S
+                </div>
+                <div>
+                  <div
+                    style={{
+                      fontFamily: "var(--font-display)",
+                      fontWeight: 700,
+                      fontSize: 16,
+                    }}
+                  >
+                    Soffia IA
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 11,
+                      color: "var(--slate-500)",
+                      fontFamily: "var(--font-mono)",
+                    }}
+                  >
+                    Atendendo agora
+                  </div>
+                </div>
+              </div>
+              <div
+                style={{ display: "flex", flexDirection: "column", gap: 8 }}
+              >
+                <div
+                  style={{
+                    alignSelf: "flex-start",
+                    background: "var(--slate-100)",
+                    padding: "8px 12px",
+                    borderRadius: 12,
+                    fontSize: 13,
+                    maxWidth: "80%",
+                  }}
+                >
+                  Oi! Sou a Soffia 🌟 Em que posso ajudar?
+                </div>
+                <div
+                  style={{
+                    alignSelf: "flex-end",
+                    background: "var(--sv-red)",
+                    color: "#fff",
+                    padding: "8px 12px",
+                    borderRadius: 12,
+                    fontSize: 13,
+                    maxWidth: "80%",
+                  }}
+                >
+                  Quero fazer vistoria do Civic
+                </div>
+                <div
+                  style={{
+                    alignSelf: "flex-start",
+                    background: "var(--slate-100)",
+                    padding: "8px 12px",
+                    borderRadius: 12,
+                    fontSize: 13,
+                    maxWidth: "80%",
+                  }}
+                >
+                  Pra Civic 2018 sai R$ 280. Tenho 16h ou amanhã 9h. Qual prefere?
+                </div>
+              </div>
+            </div>
+          </Reveal>
         </div>
       </div>
     </section>
   );
 }
 
-// ============================== SOFFIA TEASER ==============================
-function SoffiaTeaser() {
+// ============== CTA FINAL ==============
+function CTAFinal() {
   return (
-    <section className="py-20 sm:py-24 bg-gradient-to-br from-[#1B2A4A] to-[#111D35] text-white">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6">
-        <div className="grid lg:grid-cols-2 gap-10 items-center">
-          <div>
-            <div className="inline-flex items-center gap-2 bg-[#E31E24]/20 text-[#E31E24] border border-[#E31E24]/30 rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider mb-4">
-              <Sparkles className="h-3 w-3" />
-              Em breve
-            </div>
-            <h2 className="text-3xl sm:text-4xl font-bold leading-tight mb-4">
-              E quando sua unidade crescer, a <span className="text-[#E31E24]">Soffia</span> entra em cena.
-            </h2>
-            <p className="text-slate-300 leading-relaxed mb-6">
-              Nossa IA treinada com tudo da SuperVisão atende 24/7, qualifica
-              leads, agenda vistorias e passa pro humano só quando precisa.
-              Conecta direto no mesmo painel que você já vai estar usando.
-            </p>
-            <div className="space-y-2.5 text-sm text-slate-300">
-              <SoffiaItem>Atende cliente fora do horário comercial</SoffiaItem>
-              <SoffiaItem>Filtra leads frios — humano só pega quem tá quente</SoffiaItem>
-              <SoffiaItem>Agenda vistorias automaticamente</SoffiaItem>
-              <SoffiaItem>Aprende com sua unidade, fala como sua unidade</SoffiaItem>
-            </div>
+    <section className="section cta-final section-pad" id="cta">
+      <div className="cta-final-grid" />
+      <div className="container" style={{ position: "relative", zIndex: 1 }}>
+        <Reveal>
+          <span className="eyebrow on-dark">
+            <span className="dot" /> Próximo passo
+          </span>
+        </Reveal>
+        <Reveal delay={1} style={{ marginTop: 24 }}>
+          <h2
+            className="h-display"
+            style={{
+              maxWidth: 900,
+              fontSize: "clamp(38px, 5vw, 64px)",
+              color: "#fff",
+            }}
+          >
+            Sua unidade pode estar rodando o{" "}
+            <em className="soffia-mark on-dark">CRM</em> ainda esta semana.
+          </h2>
+        </Reveal>
+        <Reveal delay={2} style={{ marginTop: 24 }}>
+          <p
+            className="lead on-dark"
+            style={{ maxWidth: 600 }}
+          >
+            Cadastra em 5 minutos. Em até 2 dias úteis a Matriz configura
+            tudo, treina seu time e libera o acesso.
+          </p>
+        </Reveal>
+        <Reveal delay={3} style={{ marginTop: 40 }}>
+          <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
+            <Link href={CTA} className="btn btn-red btn-pulse">
+              Cadastrar minha unidade
+              <span style={{ fontSize: 18 }}>→</span>
+            </Link>
             <a
               href="https://soffiaiasupervisao.vercel.app/"
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-6 inline-flex items-center gap-1.5 text-sm text-[#E31E24] hover:underline font-semibold"
+              className="btn btn-outline on-dark"
             >
-              Conhecer a Soffia <ArrowRight className="h-3.5 w-3.5" />
+              Conhecer a Soffia IA
             </a>
           </div>
-          <div className="relative">
-            <div className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-5">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="h-8 w-8 rounded-full bg-gradient-to-br from-[#E31E24] to-pink-500 flex items-center justify-center">
-                  <Sparkles className="h-4 w-4 text-white" />
-                </div>
-                <div>
-                  <div className="font-bold text-sm">Soffia IA</div>
-                  <div className="text-[10px] text-slate-400">Atendendo agora</div>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Bubble bot>Oi! Sou a Soffia da SuperVisão Mooca 😊 Em que posso ajudar?</Bubble>
-                <Bubble>Queria fazer vistoria cautelar de um Civic</Bubble>
-                <Bubble bot>Show! O valor pra Civic é R$ 180. Quer agendar pra esta semana?</Bubble>
-                <Bubble>Pode ser quinta à tarde</Bubble>
-                <Bubble bot>Tenho 14h ou 16h disponível 👌 Qual prefere?</Bubble>
-              </div>
-            </div>
-          </div>
-        </div>
+        </Reveal>
+        <Reveal delay={4} style={{ marginTop: 56 }}>
+          <p
+            style={{
+              fontFamily: "var(--font-display)",
+              fontWeight: 800,
+              fontSize: "clamp(32px, 3.8vw, 48px)",
+              letterSpacing: "-0.03em",
+              color: "var(--sv-red)",
+              maxWidth: 800,
+              lineHeight: 1.1,
+            }}
+          >
+            Eu quero o CRM da minha unidade.
+          </p>
+          <p
+            style={{
+              marginTop: 12,
+              color: "rgba(255,255,255,0.65)",
+              fontSize: 15,
+              fontFamily: "var(--font-mono)",
+              letterSpacing: "0.04em",
+            }}
+          >
+            É assim que a sua próxima conversa com cliente vai começar.
+          </p>
+        </Reveal>
       </div>
     </section>
   );
 }
 
-function SoffiaItem({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="flex items-start gap-2">
-      <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
-      <span>{children}</span>
-    </div>
-  );
-}
-
-function Bubble({ children, bot }: { children: React.ReactNode; bot?: boolean }) {
-  return (
-    <div className={`flex ${bot ? "justify-start" : "justify-end"}`}>
-      <div
-        className={`max-w-[80%] rounded-2xl px-3 py-2 text-xs ${
-          bot
-            ? "bg-white/10 text-slate-200 rounded-tl-sm"
-            : "bg-emerald-500 text-white rounded-tr-sm"
-        }`}
-      >
-        {children}
-      </div>
-    </div>
-  );
-}
-
-// ============================== NÚMEROS ==============================
-function Numeros() {
-  const numeros = [
-    { v: "24+", l: "Unidades operando", sub: "rede SuperVisão" },
-    { v: "200+", l: "Atendentes ativos", sub: "diariamente" },
-    { v: "10k+", l: "Conversas/mês", sub: "centralizadas" },
-    { v: "<2 dias", l: "Pra começar", sub: "setup completo" },
-  ];
-  return (
-    <section className="py-20 sm:py-24 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="text-center max-w-2xl mx-auto mb-14">
-          <h2 className="text-3xl sm:text-4xl font-bold text-[#1B2A4A] leading-tight">
-            Não é tecnologia teórica.<br />É operação rodando.
-          </h2>
-        </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {numeros.map((n) => (
-            <div
-              key={n.l}
-              className="bg-gradient-to-br from-slate-50 to-white border border-slate-200 rounded-xl p-6 text-center"
-            >
-              <div className="text-4xl sm:text-5xl font-bold bg-gradient-to-br from-[#1B2A4A] to-[#E31E24] bg-clip-text text-transparent">
-                {n.v}
-              </div>
-              <div className="text-sm font-semibold text-slate-800 mt-2">
-                {n.l}
-              </div>
-              <div className="text-xs text-slate-500 mt-0.5">{n.sub}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// ============================== FAQ ==============================
-function FAQ() {
-  const perguntas = [
-    {
-      q: "Quanto custa?",
-      a: "O CRM é um benefício oferecido pela rede SuperVisão pra cada unidade. Os valores e modelo de cobrança a Matriz explica diretamente com você após o cadastro.",
-    },
-    {
-      q: "Em quanto tempo minha unidade entra no ar?",
-      a: "Em até 2 dias úteis após o cadastro. A gente configura o painel, conecta o WhatsApp, cadastra seus atendentes, monta o funil de vendas e as etiquetas padrão.",
-    },
-    {
-      q: "Preciso trocar o número do meu WhatsApp?",
-      a: "Não. Você usa o mesmo número que já tem. O CRM se conecta nele e centraliza tudo. Se ainda não tiver número da unidade, a gente orienta.",
-    },
-    {
-      q: "Quem treina meu time?",
-      a: "Nossa equipe faz uma reunião ao vivo de ~1h com seu time, ensinando tudo. Depois você ganha acesso a um grupo de suporte no WhatsApp pra dúvidas.",
-    },
-    {
-      q: "Funciona no celular?",
-      a: "Sim. O painel é 100% web e funciona em qualquer celular ou computador. Tem app oficial do Chatwoot na Play Store e App Store também.",
-    },
-    {
-      q: "E se eu já uso outro CRM?",
-      a: "Sem problema. A gente ajuda a migrar seus contatos e conversas atuais. O processo é tranquilo e não trava sua operação durante a transição.",
-    },
-    {
-      q: "Tem suporte se algo der errado?",
-      a: "Sim. Você fica em um grupo de WhatsApp com nossa equipe técnica. Resposta no horário comercial em até 30 minutos. Bugs críticos resolvemos no mesmo dia.",
-    },
-    {
-      q: "Qual a diferença do WhatsApp Business comum?",
-      a: "WhatsApp Business é pra UM celular, UM atendente. O CRM SuperVisão é multi-atendente, com histórico unificado, kanban de vendas, relatórios, etiquetas, agenda integrada e atribuição automática.",
-    },
-    {
-      q: "Quando a IA Soffia fica disponível?",
-      a: "A Soffia já está em produção em algumas unidades. A integração padronizada com o CRM SuperVisão está sendo finalizada — em breve qualquer unidade poderá ativar com 1 clique.",
-    },
-    {
-      q: "Posso cancelar?",
-      a: "Sim, a qualquer momento. Não há multa nem fidelidade. Mas a verdade é que ninguém cancelou ainda 😉",
-    },
-  ];
-  return (
-    <section id="faq" className="py-20 sm:py-24 bg-slate-50">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl sm:text-4xl font-bold text-[#1B2A4A] leading-tight">
-            Perguntas frequentes
-          </h2>
-        </div>
-        <div className="space-y-2">
-          {perguntas.map((p, i) => (
-            <FAQItem key={i} q={p.q} a={p.a} />
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function FAQItem({ q, a }: { q: string; a: string }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
-      <button
-        onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between gap-4 p-4 text-left hover:bg-slate-50 transition-colors"
-      >
-        <span className="font-semibold text-[#1B2A4A] text-sm sm:text-base">
-          {q}
-        </span>
-        <ChevronDown
-          className={`h-4 w-4 text-slate-400 shrink-0 transition-transform ${
-            open ? "rotate-180" : ""
-          }`}
-        />
-      </button>
-      {open && (
-        <div className="px-4 pb-4 text-sm text-slate-600 leading-relaxed">
-          {a}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ============================== CTA FINAL ==============================
-function CTAFinal() {
-  return (
-    <section className="py-20 sm:py-28 bg-white">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6">
-        <div className="relative bg-gradient-to-br from-[#1B2A4A] via-[#243556] to-[#111D35] rounded-3xl p-10 sm:p-16 text-center text-white overflow-hidden">
-          <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <div className="absolute -top-20 -right-20 h-60 w-60 rounded-full bg-[#E31E24]/30 blur-3xl" />
-            <div className="absolute -bottom-20 -left-20 h-60 w-60 rounded-full bg-blue-500/20 blur-3xl" />
-          </div>
-          <div className="relative">
-            <Shield className="h-10 w-10 text-[#E31E24] mx-auto mb-4" />
-            <h2 className="text-3xl sm:text-4xl font-bold leading-tight">
-              Pronto pra organizar sua unidade?
-            </h2>
-            <p className="mt-4 text-slate-300 max-w-xl mx-auto">
-              Sem instalar nada. Sem trocar número. Sem dor de cabeça. Em 2 dias
-              sua unidade vendendo melhor.
-            </p>
-            <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
-              <Link
-                href={CTA_CADASTRO}
-                className="inline-flex items-center justify-center gap-2 bg-[#E31E24] hover:bg-[#C41A1F] text-white font-semibold px-7 py-4 rounded-lg transition-colors shadow-lg shadow-red-500/30"
-              >
-                Cadastrar minha unidade agora
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-            </div>
-            <p className="mt-6 text-xs text-slate-400">
-              Cadastro em ~5 minutos · Time da Matriz revisa e configura
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// ============================== FOOTER ==============================
+// ============== FOOTER ==============
 function Footer() {
   return (
-    <footer className="bg-[#0F1729] text-slate-400 py-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="grid sm:grid-cols-3 gap-8">
-          <div>
-            <div className="flex items-center gap-2.5 mb-3">
-              <div className="h-9 w-9 rounded-lg bg-[#E31E24] font-bold text-white flex items-center justify-center">
-                S
+    <footer
+      style={{
+        background: "var(--navy)",
+        color: "rgba(255,255,255,0.5)",
+        padding: "48px 0 32px",
+        borderTop: "1px solid rgba(255,255,255,0.06)",
+      }}
+    >
+      <div className="container">
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            flexWrap: "wrap",
+            gap: 16,
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <span
+              style={{
+                width: 32,
+                height: 32,
+                borderRadius: 6,
+                background: "var(--sv-red)",
+                color: "#fff",
+                fontWeight: 900,
+                fontFamily: "var(--font-display)",
+                display: "grid",
+                placeItems: "center",
+              }}
+            >
+              S
+            </span>
+            <div>
+              <div
+                style={{
+                  color: "#fff",
+                  fontFamily: "var(--font-display)",
+                  fontWeight: 700,
+                  fontSize: 14,
+                }}
+              >
+                SuperVisão
               </div>
-              <div>
-                <div className="text-sm font-bold text-white">SuperVisão</div>
-                <div className="text-[10px] uppercase tracking-wider">
-                  CRM Oficial
-                </div>
+              <div
+                style={{
+                  fontSize: 10,
+                  fontFamily: "var(--font-mono)",
+                  letterSpacing: "0.10em",
+                  textTransform: "uppercase",
+                }}
+              >
+                CRM Oficial
               </div>
             </div>
-            <p className="text-xs leading-relaxed">
-              Painel oficial das unidades da rede SuperVisão. Centraliza, organiza
-              e potencializa vendas.
-            </p>
           </div>
-          <div>
-            <h4 className="text-xs uppercase font-bold text-white tracking-wider mb-3">
-              Produto
-            </h4>
-            <ul className="space-y-2 text-xs">
-              <li><a href="#features" className="hover:text-white">Recursos</a></li>
-              <li><a href="#como-funciona" className="hover:text-white">Como funciona</a></li>
-              <li><a href="#faq" className="hover:text-white">FAQ</a></li>
-              <li>
-                <a href="https://soffiaiasupervisao.vercel.app/" target="_blank" rel="noopener noreferrer" className="hover:text-white">
-                  Soffia IA
-                </a>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="text-xs uppercase font-bold text-white tracking-wider mb-3">
-              Acesso
-            </h4>
-            <ul className="space-y-2 text-xs">
-              <li>
-                <Link href="/cadastro" className="hover:text-white">
-                  Cadastrar unidade
-                </Link>
-              </li>
-              <li>
-                <Link href="/login" className="hover:text-white">
-                  Login (já sou cliente)
-                </Link>
-              </li>
-              <li>
-                <a href="https://supervisao.com" target="_blank" rel="noopener noreferrer" className="hover:text-white">
-                  Site SuperVisão
-                </a>
-              </li>
-            </ul>
+          <div
+            style={{
+              display: "flex",
+              gap: 24,
+              fontFamily: "var(--font-mono)",
+              fontSize: 11,
+              letterSpacing: "0.06em",
+              textTransform: "uppercase",
+            }}
+          >
+            <Link href="/cadastro" style={{ color: "rgba(255,255,255,0.7)" }}>
+              Cadastrar
+            </Link>
+            <Link href="/login" style={{ color: "rgba(255,255,255,0.7)" }}>
+              Login
+            </Link>
+            <a
+              href="https://soffiaiasupervisao.vercel.app/"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: "rgba(255,255,255,0.7)" }}
+            >
+              Soffia IA
+            </a>
           </div>
         </div>
-        <div className="border-t border-slate-800 mt-10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-          <div>© {new Date().getFullYear()} SuperVisão · Dose de Growth</div>
-          <div className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-slate-500">
-            <Clock className="h-3 w-3" /> Sistema 99,9% uptime
-          </div>
+        <div
+          style={{
+            marginTop: 32,
+            paddingTop: 24,
+            borderTop: "1px solid rgba(255,255,255,0.06)",
+            fontSize: 11,
+            fontFamily: "var(--font-mono)",
+            letterSpacing: "0.06em",
+            color: "rgba(255,255,255,0.4)",
+          }}
+        >
+          © {new Date().getFullYear()} SuperVisão · Dose de Growth · Sistema 99,9% uptime
         </div>
       </div>
     </footer>
+  );
+}
+
+// ============== FLOATING PROGRESS ==============
+function FloatingProgress() {
+  const [active, setActive] = useState("hero");
+  const [onDark, setOnDark] = useState(false);
+  useEffect(() => {
+    const ids = [
+      "hero",
+      "problema",
+      "solucao",
+      "funil",
+      "acessos",
+      "agenda",
+      "painel",
+      "diferenca",
+      "impacto",
+      "soffia",
+      "cta",
+    ];
+    const onScroll = () => {
+      const mid = window.scrollY + window.innerHeight / 2;
+      let cur = ids[0];
+      for (const id of ids) {
+        const el = document.getElementById(id);
+        if (!el) continue;
+        if (el.offsetTop <= mid) cur = id;
+      }
+      setActive(cur);
+      const el = document.getElementById(cur);
+      if (el) {
+        const dark =
+          el.classList.contains("dark") || el.classList.contains("cta-final");
+        setOnDark(dark);
+      }
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const labels: Record<string, string> = {
+    hero: "Início",
+    problema: "Problema",
+    solucao: "Solução",
+    funil: "Funil",
+    acessos: "Acessos",
+    agenda: "Agenda",
+    painel: "Painel",
+    diferenca: "Diferença",
+    impacto: "Impacto",
+    soffia: "Soffia",
+    cta: "Próximo",
+  };
+
+  return (
+    <div className={`floating-marker ${onDark ? "on-dark" : ""}`}>
+      {Object.keys(labels).map((id) => (
+        <a
+          key={id}
+          href={`#${id}`}
+          className={`step ${active === id ? "active" : ""}`}
+        >
+          <span className="label">{labels[id]}</span>
+          <span className="bar" />
+        </a>
+      ))}
+    </div>
   );
 }
