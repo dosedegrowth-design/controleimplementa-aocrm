@@ -17,6 +17,7 @@ interface OnboardingSubmission {
   telefone_inbox: string | null;
   agentes: { nome: string; email: string; perfil: string }[];
   observacoes: string | null;
+  provider_chatwoot: "whatsapp_cloud" | "waha" | null;
   enviado_em: string | null;
   aprovado_em: string | null;
   rejeitado_em: string | null;

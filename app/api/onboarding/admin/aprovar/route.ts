@@ -35,9 +35,22 @@ export async function POST(request: Request) {
 
   const body = await request.json();
   const subId = body.submission_id;
+  const providerChatwoot = body.provider_chatwoot as string | undefined;
+
   if (!subId) {
     return NextResponse.json(
       { error: "submission_id obrigatório" },
+      { status: 400 },
+    );
+  }
+
+  // Provider é obrigatório na aprovação — decisão técnica do time
+  if (!providerChatwoot || !["whatsapp_cloud", "waha"].includes(providerChatwoot)) {
+    return NextResponse.json(
+      {
+        error:
+          "Escolha o provider WhatsApp: 'whatsapp_cloud' (oficial Meta) ou 'waha'",
+      },
       { status: 400 },
     );
   }
@@ -63,6 +76,13 @@ export async function POST(request: Request) {
 
   // Cria unidade
   const sheetHash = `onboarding_${sub.id}`;
+  const numerosCRM: string[] = [];
+  if (Array.isArray(sub.numeros_inbox) && sub.numeros_inbox.length > 0) {
+    numerosCRM.push(...sub.numeros_inbox.filter((n: unknown): n is string => typeof n === "string" && n.trim().length > 0));
+  } else if (sub.telefone_inbox) {
+    numerosCRM.push(sub.telefone_inbox);
+  }
+
   const { data: unidade, error: unidadeErr } = await service
     .from("unidades")
     .insert({
@@ -70,9 +90,10 @@ export async function POST(request: Request) {
       nome_unidade: sub.nome_unidade,
       nome_franqueado: sub.nome_franqueado,
       telefone_franqueado: sub.telefone_franqueado,
-      numeros_crm: sub.telefone_inbox ? [sub.telefone_inbox] : [],
+      numeros_crm: numerosCRM,
       observacoes: sub.observacoes,
       sheet_row_hash: sheetHash,
+      provider_chatwoot: providerChatwoot,
     })
     .select("id")
     .single();
@@ -97,7 +118,7 @@ export async function POST(request: Request) {
     });
   }
 
-  // Marca submission como aprovada
+  // Marca submission como aprovada (com provider escolhido)
   await service
     .from("onboarding_submissoes")
     .update({
@@ -105,6 +126,7 @@ export async function POST(request: Request) {
       aprovado_em: new Date().toISOString(),
       aprovado_por: user.email,
       unidade_id: unidade.id,
+      provider_chatwoot: providerChatwoot,
     })
     .eq("id", subId);
 
@@ -112,5 +134,6 @@ export async function POST(request: Request) {
     ok: true,
     unidade_id: unidade.id,
     agentes_criados: agentes.length,
+    provider_chatwoot: providerChatwoot,
   });
 }

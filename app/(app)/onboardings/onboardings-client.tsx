@@ -52,6 +52,7 @@ interface OnboardingSubmission {
   telefone_inbox: string | null;
   agentes: { nome: string; email: string; perfil: string }[];
   observacoes: string | null;
+  provider_chatwoot: "whatsapp_cloud" | "waha" | null;
   enviado_em: string | null;
   aprovado_em: string | null;
   rejeitado_em: string | null;
@@ -326,18 +327,27 @@ function SubmissionDrawer({
   const [rejeitando, setRejeitando] = useState(false);
   const [motivoRejeicao, setMotivoRejeicao] = useState("");
   const [confirmRejeitar, setConfirmRejeitar] = useState(false);
+  const [confirmAprovar, setConfirmAprovar] = useState(false);
+  const [providerEscolhido, setProviderEscolhido] = useState<"whatsapp_cloud" | "waha" | null>(null);
 
   if (!submission) return null;
 
   const link = `${typeof window !== "undefined" ? window.location.origin : ""}/onboarding/${submission.token_publico}`;
 
   async function aprovar() {
+    if (!providerEscolhido) {
+      alert("Escolha o provider WhatsApp antes de aprovar");
+      return;
+    }
     setAprovando(true);
     try {
       const r = await fetch("/api/onboarding/admin/aprovar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ submission_id: submission!.id }),
+        body: JSON.stringify({
+          submission_id: submission!.id,
+          provider_chatwoot: providerEscolhido,
+        }),
       });
       const data = await r.json();
       if (!r.ok) {
@@ -345,6 +355,8 @@ function SubmissionDrawer({
         return;
       }
       onAction();
+      setConfirmAprovar(false);
+      setProviderEscolhido(null);
       onClose();
     } finally {
       setAprovando(false);
@@ -465,12 +477,16 @@ function SubmissionDrawer({
           {/* Ações */}
           {submission.status === "enviado" && (
             <div className="border-t border-slate-200 pt-4 space-y-2">
-              <Button onClick={aprovar} disabled={aprovando} className="w-full" variant="success">
-                {aprovando ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <CheckCircle2 className="h-4 w-4" />
-                )}
+              <Button
+                onClick={() => {
+                  setProviderEscolhido(null);
+                  setConfirmAprovar(true);
+                }}
+                disabled={aprovando}
+                className="w-full"
+                variant="success"
+              >
+                <CheckCircle2 className="h-4 w-4" />
                 Aprovar e criar unidade
               </Button>
               <Button
@@ -487,16 +503,155 @@ function SubmissionDrawer({
 
           {submission.status === "aprovado" && (
             <div className="bg-emerald-50 border border-emerald-200 rounded p-3">
-              <p className="text-sm font-semibold text-emerald-800">
-                ✓ Unidade criada no painel
-              </p>
-              <p className="text-xs text-emerald-600 mt-1">
-                Aprovada em {submission.aprovado_em && formatDateTime(submission.aprovado_em)}
-              </p>
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <p className="text-sm font-semibold text-emerald-800">
+                    ✓ Unidade criada no painel
+                  </p>
+                  <p className="text-xs text-emerald-600 mt-1">
+                    Aprovada em {submission.aprovado_em && formatDateTime(submission.aprovado_em)}
+                  </p>
+                </div>
+                {submission.provider_chatwoot && (
+                  <span
+                    className={`text-[9px] uppercase font-bold tracking-wider px-2 py-1 rounded shrink-0 ${
+                      submission.provider_chatwoot === "whatsapp_cloud"
+                        ? "bg-blue-100 text-blue-800"
+                        : "bg-amber-100 text-amber-800"
+                    }`}
+                  >
+                    {submission.provider_chatwoot === "whatsapp_cloud"
+                      ? "Cloud (Meta)"
+                      : "WAHA"}
+                  </span>
+                )}
+              </div>
             </div>
           )}
         </div>
       </SheetContent>
+
+      {/* Modal de aprovação — escolha do provider WhatsApp */}
+      <Dialog open={confirmAprovar} onOpenChange={setConfirmAprovar}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Aprovar e criar unidade</DialogTitle>
+            <DialogDescription>
+              Antes de criar no Chatwoot, escolha como o WhatsApp dessa unidade vai conectar.
+              <br />
+              <span className="text-xs text-amber-700 font-medium">
+                ⚠ Decisão técnica do time — não pode ser alterada facilmente depois.
+              </span>
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3 mt-2">
+            {/* Card WhatsApp Cloud */}
+            <button
+              type="button"
+              onClick={() => setProviderEscolhido("whatsapp_cloud")}
+              className={`w-full text-left rounded-lg border-2 p-4 transition-all ${
+                providerEscolhido === "whatsapp_cloud"
+                  ? "border-[#E30613] bg-red-50 shadow-md"
+                  : "border-slate-200 hover:border-slate-300"
+              }`}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="font-bold text-[#1B2A4A] text-sm">
+                      WhatsApp Cloud (API oficial Meta)
+                    </span>
+                    {providerEscolhido === "whatsapp_cloud" && (
+                      <span className="text-[9px] uppercase font-bold tracking-wider bg-[#E30613] text-white px-2 py-0.5 rounded">
+                        Selecionado
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-slate-600 leading-relaxed mb-2">
+                    Oficial Meta, mais estável, status verificado. Setup mais demorado (precisa BM aprovado).
+                  </p>
+                  <ul className="text-[11px] space-y-0.5">
+                    <li className="text-emerald-700">✓ Oficial e estável</li>
+                    <li className="text-emerald-700">✓ Selo verde verificado possível</li>
+                    <li className="text-amber-700">⚠ Precisa BM Meta aprovado</li>
+                    <li className="text-amber-700">⚠ Custos Meta por conversa</li>
+                  </ul>
+                </div>
+              </div>
+            </button>
+
+            {/* Card WAHA */}
+            <button
+              type="button"
+              onClick={() => setProviderEscolhido("waha")}
+              className={`w-full text-left rounded-lg border-2 p-4 transition-all ${
+                providerEscolhido === "waha"
+                  ? "border-[#E30613] bg-red-50 shadow-md"
+                  : "border-slate-200 hover:border-slate-300"
+              }`}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="font-bold text-[#1B2A4A] text-sm">
+                      WAHA (não-oficial)
+                    </span>
+                    {providerEscolhido === "waha" && (
+                      <span className="text-[9px] uppercase font-bold tracking-wider bg-[#E30613] text-white px-2 py-0.5 rounded">
+                        Selecionado
+                      </span>
+                    )}
+                    <span className="text-[9px] uppercase font-bold tracking-wider bg-amber-100 text-amber-800 px-2 py-0.5 rounded">
+                      Padrão atual
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-600 leading-relaxed mb-2">
+                    Setup rápido, funciona com qualquer número (pessoal ou Business). Não-oficial.
+                  </p>
+                  <ul className="text-[11px] space-y-0.5">
+                    <li className="text-emerald-700">✓ Setup em minutos</li>
+                    <li className="text-emerald-700">✓ Sem burocracia Meta</li>
+                    <li className="text-emerald-700">✓ Funciona com qualquer número</li>
+                    <li className="text-amber-700">⚠ Não-oficial — pequeno risco de ban</li>
+                  </ul>
+                </div>
+              </div>
+            </button>
+          </div>
+
+          <div className="bg-slate-50 border border-slate-200 rounded p-3 mt-2">
+            <p className="text-[11px] text-slate-600 leading-relaxed">
+              <span className="font-bold">Sequência ao aprovar:</span> Account → Inbox (
+              {providerEscolhido === "whatsapp_cloud"
+                ? "Cloud"
+                : providerEscolhido === "waha"
+                  ? "WAHA"
+                  : "?"}
+              ) → 6 agentes → Funnel + 7 stages → 13 labels → 3 automações → 2 dashboards.
+              <br />
+              <span className="text-[10px] text-slate-500 italic mt-1 inline-block">
+                Por enquanto, aprovar cria só a unidade no painel interno. O provisionamento automático Chatwoot é o próximo passo.
+              </span>
+            </p>
+          </div>
+
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setConfirmAprovar(false)} disabled={aprovando}>
+              Cancelar
+            </Button>
+            <Button
+              variant="success"
+              onClick={aprovar}
+              disabled={aprovando || !providerEscolhido}
+            >
+              {aprovando && <Loader2 className="h-4 w-4 animate-spin" />}
+              <CheckCircle2 className="h-4 w-4" />
+              Confirmar aprovação
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Modal de confirmação de rejeição */}
       <Dialog open={confirmRejeitar} onOpenChange={setConfirmRejeitar}>
