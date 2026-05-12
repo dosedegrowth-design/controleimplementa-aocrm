@@ -854,35 +854,52 @@ function Solucao() {
             {
               t: "Caixa única",
               d: "Todos os WhatsApp da unidade num só painel. Atendentes vivem aqui.",
-              ic: "💬",
+              icon: (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 12a8.5 8.5 0 0 1-12.7 7.4L3 21l1.6-5.3A8.5 8.5 0 1 1 21 12Z" />
+                </svg>
+              ),
             },
             {
               t: "Kanban de vendas",
               d: "Lead → Interesse → Qualificado → Agendado → Fechado. Visual e real.",
-              ic: "📊",
+              icon: (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="4" width="5" height="16" rx="1" />
+                  <rect x="10" y="4" width="5" height="11" rx="1" />
+                  <rect x="17" y="4" width="4" height="7" rx="1" />
+                </svg>
+              ),
             },
             {
               t: "Números de verdade",
               d: "Quem vendeu o quê, ticket médio, conversão. Sem achismo.",
-              ic: "🎯",
+              icon: (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M3 21h18M7 17V9M12 17V5M17 17v-6" />
+                </svg>
+              ),
             },
           ].map((f, i) => (
             <Reveal key={f.t} delay={(i + 2) as 2 | 3 | 4}>
               <div className="card">
                 <div
                   style={{
-                    width: 44,
-                    height: 44,
-                    borderRadius: 10,
-                    background:
-                      "linear-gradient(135deg, var(--sv-red-soft) 0%, #FFD8DC 100%)",
+                    width: 48,
+                    height: 48,
+                    borderRadius: 12,
+                    background: "#fff",
+                    border: "1px solid var(--slate-200)",
+                    color: "var(--sv-red)",
                     display: "grid",
                     placeItems: "center",
-                    fontSize: 22,
-                    marginBottom: 18,
+                    marginBottom: 20,
+                    boxShadow: "0 1px 2px rgba(15,23,42,0.04)",
                   }}
                 >
-                  {f.ic}
+                  <span style={{ width: 22, height: 22, display: "block" }}>
+                    {f.icon}
+                  </span>
                 </div>
                 <h3
                   style={{
@@ -2274,11 +2291,50 @@ function Painel() {
             className="painel-areas-grid"
           >
             {[
-              { t: "Conversas", ic: "💬" },
-              { t: "Kanban", ic: "📊" },
-              { t: "Agenda", ic: "📅" },
-              { t: "Relatórios", ic: "📈" },
-              { t: "Etiquetas", ic: "🏷️" },
+              {
+                t: "Conversas",
+                icon: (
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 12a8.5 8.5 0 0 1-12.7 7.4L3 21l1.6-5.3A8.5 8.5 0 1 1 21 12Z" />
+                  </svg>
+                ),
+              },
+              {
+                t: "Kanban",
+                icon: (
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="4" width="5" height="16" rx="1" />
+                    <rect x="10" y="4" width="5" height="11" rx="1" />
+                    <rect x="17" y="4" width="4" height="7" rx="1" />
+                  </svg>
+                ),
+              },
+              {
+                t: "Agenda",
+                icon: (
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="5" width="18" height="16" rx="2" />
+                    <path d="M3 10h18M8 3v4M16 3v4" />
+                  </svg>
+                ),
+              },
+              {
+                t: "Relatórios",
+                icon: (
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M3 21h18M7 17V9M12 17V5M17 17v-6" />
+                  </svg>
+                ),
+              },
+              {
+                t: "Etiquetas",
+                icon: (
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
+                    <line x1="7" y1="7" x2="7.01" y2="7" />
+                  </svg>
+                ),
+              },
             ].map((area) => (
               <div
                 key={area.t}
@@ -2288,9 +2344,26 @@ function Painel() {
                   background: "rgba(255,255,255,0.03)",
                   border: "1px solid rgba(255,255,255,0.10)",
                   borderRadius: 12,
+                  transition: "all 0.2s ease",
                 }}
               >
-                <div style={{ fontSize: 28, marginBottom: 8 }}>{area.ic}</div>
+                <div
+                  style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: 10,
+                    background: "rgba(227,6,19,0.10)",
+                    border: "1px solid rgba(227,6,19,0.25)",
+                    color: "var(--sv-red)",
+                    margin: "0 auto 12px",
+                    display: "grid",
+                    placeItems: "center",
+                  }}
+                >
+                  <span style={{ width: 20, height: 20, display: "block" }}>
+                    {area.icon}
+                  </span>
+                </div>
                 <div
                   style={{
                     fontFamily: "var(--font-mono)",
