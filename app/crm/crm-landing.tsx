@@ -130,6 +130,7 @@ export function CrmLanding() {
       <Funil />
       <AcessosSection />
       <AgendaSection />
+      <KanbanSection />
       <Painel />
       <NotCommonCRM />
       <BeforeAfter />
@@ -336,135 +337,265 @@ function HeroMockup() {
 }
 
 function DashboardPreview() {
-  return (
-    <div
-      style={{
-        padding: 18,
-        background: "#fff",
-        height: 340,
-        display: "flex",
-        flexDirection: "column",
-        gap: 14,
-      }}
+  // Sparkline genérico (caminho SVG curvo)
+  const spark = (color: string) => (
+    <svg
+      viewBox="0 0 80 24"
+      preserveAspectRatio="none"
+      style={{ width: "100%", height: 22 }}
     >
+      <defs>
+        <linearGradient id={`sg-${color.replace("#", "")}`} x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity="0.25" />
+          <stop offset="100%" stopColor={color} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <path
+        d="M0 18 L10 14 L20 16 L30 10 L40 12 L50 6 L60 8 L70 4 L80 6 L80 24 L0 24 Z"
+        fill={`url(#sg-${color.replace("#", "")})`}
+      />
+      <path
+        d="M0 18 L10 14 L20 16 L30 10 L40 12 L50 6 L60 8 L70 4 L80 6"
+        fill="none"
+        stroke={color}
+        strokeWidth="1.5"
+      />
+    </svg>
+  );
+
+  return (
+    <div style={{ background: "#fff", display: "flex", flexDirection: "column" }}>
+      {/* HERO FINANCEIRO (gradient navy/blue) */}
       <div
         style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
+          background: "linear-gradient(135deg, #1B2A4A 0%, #2D4373 50%, #3B82F6 100%)",
+          color: "#fff",
+          padding: "18px 20px",
+          position: "relative",
+          overflow: "hidden",
         }}
       >
-        <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          <span
-            style={{
-              fontSize: 10,
-              fontFamily: "var(--font-mono)",
-              color: "var(--slate-500)",
-              letterSpacing: "0.1em",
-              textTransform: "uppercase",
-              fontWeight: 600,
-            }}
-          >
-            Faturamento da unidade · Hoje
-          </span>
-          <span
-            style={{
-              fontFamily: "var(--font-display)",
-              fontSize: 30,
-              fontWeight: 800,
-              letterSpacing: "-0.03em",
-              color: "var(--navy)",
-            }}
-          >
-            R$ <Counter to={14820} duration={1800} />
-          </span>
-        </div>
-        <div style={{ display: "flex", gap: 6 }}>
-          {["Hoje", "Semana", "Mês"].map((t, i) => (
-            <span
-              key={t}
+        {/* Blobs decorativos */}
+        <div
+          style={{
+            position: "absolute",
+            top: -40,
+            right: -40,
+            width: 140,
+            height: 140,
+            borderRadius: "50%",
+            background: "rgba(255,255,255,0.06)",
+            filter: "blur(40px)",
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            bottom: -30,
+            left: -30,
+            width: 110,
+            height: 110,
+            borderRadius: "50%",
+            background: "rgba(255,255,255,0.05)",
+            filter: "blur(40px)",
+          }}
+        />
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1.2fr 1fr 1.4fr",
+            gap: 16,
+            position: "relative",
+            zIndex: 1,
+          }}
+        >
+          {/* Receita */}
+          <div>
+            <div
               style={{
-                padding: "6px 12px",
-                borderRadius: 999,
-                fontSize: 11,
+                fontSize: 9,
                 fontFamily: "var(--font-mono)",
+                color: "rgba(255,255,255,0.65)",
+                letterSpacing: "0.10em",
+                textTransform: "uppercase",
                 fontWeight: 600,
-                background: i === 0 ? "var(--sv-red)" : "var(--slate-100)",
-                color: i === 0 ? "#fff" : "var(--slate-500)",
+                display: "flex",
+                alignItems: "center",
+                gap: 4,
               }}
             >
-              {t}
-            </span>
-          ))}
-        </div>
-      </div>
-      <svg
-        viewBox="0 0 320 90"
-        preserveAspectRatio="none"
-        style={{ width: "100%", height: 80 }}
-      >
-        <defs>
-          <linearGradient id="dashGrad" x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0%" stopColor="#E30613" stopOpacity="0.20" />
-            <stop offset="100%" stopColor="#E30613" stopOpacity="0" />
-          </linearGradient>
-        </defs>
-        <path
-          d="M0 70 L40 60 L80 65 L120 50 L160 40 L200 45 L240 30 L280 25 L320 15 L320 90 L0 90 Z"
-          fill="url(#dashGrad)"
-        />
-        <path
-          d="M0 70 L40 60 L80 65 L120 50 L160 40 L200 45 L240 30 L280 25 L320 15"
-          fill="none"
-          stroke="#E30613"
-          strokeWidth="2"
-        />
-      </svg>
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(4, 1fr)",
-          gap: 8,
-        }}
-      >
-        {[
-          { l: "Leads", v: 47, c: "#16A34A" },
-          { l: "Qualif.", v: 31, c: "#2563EB" },
-          { l: "Agend.", v: 19, c: "#E30613" },
-          { l: "Fechado", v: 12, c: "#15803D" },
-        ].map((s) => (
+              <span>$</span>
+              <span>Receita do período</span>
+            </div>
+            <div
+              style={{
+                fontFamily: "var(--font-display)",
+                fontWeight: 800,
+                fontSize: 26,
+                letterSpacing: "-0.03em",
+                marginTop: 2,
+                color: "#fff",
+              }}
+            >
+              R$ <Counter to={47820} duration={1800} />
+            </div>
+            <div
+              style={{
+                fontSize: 9.5,
+                color: "rgba(255,255,255,0.7)",
+                marginTop: 2,
+                fontFamily: "var(--font-mono)",
+              }}
+            >
+              Vistorias verificadas · ticket médio R$ 218
+            </div>
+          </div>
+          {/* Top Unidade */}
           <div
-            key={s.l}
             style={{
-              background: "#fff",
-              border: "1px solid var(--slate-200)",
-              borderRadius: 8,
-              padding: "10px 12px",
+              borderLeft: "1px solid rgba(255,255,255,0.15)",
+              paddingLeft: 14,
             }}
           >
             <div
               style={{
                 fontSize: 9,
                 fontFamily: "var(--font-mono)",
-                letterSpacing: "0.08em",
+                color: "rgba(255,255,255,0.65)",
+                letterSpacing: "0.10em",
                 textTransform: "uppercase",
-                color: "var(--slate-500)",
+                fontWeight: 600,
+                display: "flex",
+                alignItems: "center",
+                gap: 4,
+              }}
+            >
+              <span>👑</span>
+              <span>Top unidade</span>
+            </div>
+            <div
+              style={{
+                fontFamily: "var(--font-display)",
+                fontWeight: 700,
+                fontSize: 18,
+                letterSpacing: "-0.02em",
+                marginTop: 2,
+                color: "#fff",
+              }}
+            >
+              Centro
+            </div>
+            <div
+              style={{
+                fontSize: 9.5,
+                color: "rgba(255,255,255,0.7)",
+                marginTop: 2,
+                fontFamily: "var(--font-mono)",
+              }}
+            >
+              R$ 12.480 · 64 fechados
+            </div>
+          </div>
+          {/* Sparkline 14 dias */}
+          <div
+            style={{
+              borderLeft: "1px solid rgba(255,255,255,0.15)",
+              paddingLeft: 14,
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <div
+              style={{
+                fontSize: 9,
+                fontFamily: "var(--font-mono)",
+                color: "rgba(255,255,255,0.65)",
+                letterSpacing: "0.10em",
+                textTransform: "uppercase",
                 fontWeight: 600,
               }}
             >
-              {s.l}
+              Receita · últimos 14 dias
+            </div>
+            <svg
+              viewBox="0 0 200 40"
+              preserveAspectRatio="none"
+              style={{ width: "100%", height: 32, marginTop: 4 }}
+            >
+              <path
+                d="M0 28 L15 22 L30 26 L50 18 L70 24 L90 14 L110 18 L130 8 L150 14 L170 6 L185 12 L200 8"
+                fill="none"
+                stroke="#fff"
+                strokeWidth="1.8"
+                opacity="0.95"
+              />
+            </svg>
+            <div
+              style={{
+                fontSize: 9,
+                color: "rgba(255,255,255,0.6)",
+                fontFamily: "var(--font-mono)",
+              }}
+            >
+              Conversão: 14.5%
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* GRID DE KPIS COM SPARKLINES */}
+      <div
+        style={{
+          background: "#F8FAFC",
+          padding: 12,
+          display: "grid",
+          gridTemplateColumns: "repeat(7, 1fr)",
+          gap: 6,
+        }}
+      >
+        {[
+          { l: "Total", v: "812", c: "#1B2A4A" },
+          { l: "Leads", v: "247", c: "#3B82F6" },
+          { l: "Interess.", v: "186", c: "#2D4373" },
+          { l: "Qualif.", v: "94", c: "#A855F7" },
+          { l: "Agend.", v: "68", c: "#E30613" },
+          { l: "Fechado", v: "52", c: "#16A34A" },
+          { l: "Receita", v: "R$47k", c: "#E30613" },
+        ].map((k) => (
+          <div
+            key={k.l}
+            style={{
+              background: "#fff",
+              border: "1px solid var(--slate-200)",
+              borderRadius: 8,
+              padding: "8px 9px 4px",
+            }}
+          >
+            <div
+              style={{
+                fontSize: 7.5,
+                fontFamily: "var(--font-mono)",
+                color: "var(--slate-500)",
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                fontWeight: 700,
+              }}
+            >
+              {k.l}
             </div>
             <div
               style={{
                 fontFamily: "var(--font-display)",
                 fontWeight: 800,
-                fontSize: 20,
-                color: s.c,
-                marginTop: 2,
+                fontSize: 14,
+                color: "var(--navy)",
+                marginTop: 1,
+                letterSpacing: "-0.02em",
               }}
             >
-              {s.v}
+              {k.v}
             </div>
+            <div style={{ marginTop: 2 }}>{spark(k.c)}</div>
           </div>
         ))}
       </div>
@@ -1079,23 +1210,12 @@ function AgendaSection() {
 
 function AgendaMockup() {
   const slots = [
-    { h: "09:00", c: "Civic 2018 — Carol", t: "presencial", st: "fechado" },
-    { h: "10:30", c: "Onix — João S.", t: "presencial", st: "fechado" },
-    { h: "11:00", c: "HB20 — Marcos R.", t: "delivery", st: "qual" },
-    { h: "14:00", c: "Corolla — Patrícia", t: "presencial", st: "fechado" },
-    { h: "15:30", c: "Compass — Letícia", t: "delivery", st: "agend" },
-    { h: "16:00", c: "Civic — Rafael F.", t: "presencial", st: "agend" },
+    { h: "08:00", t: "presencial", nome: "Cliente A.", servico: "Vistoria de Transferência", placa: "ABC1D23", valor: 211, unidade: "Centro" },
+    { h: "09:30", t: "presencial", nome: "Cliente B.", servico: "Cautelar Premium", placa: "FRB0527", valor: 280, unidade: "Norte" },
+    { h: "11:00", t: "delivery", nome: "Cliente C.", servico: "Cautelar", placa: "XYZ7E89", valor: 211, unidade: "Centro" },
+    { h: "14:00", t: "presencial", nome: "Cliente D.", servico: "Transferência (ECV)", placa: "JKL4M56", valor: 168, unidade: "Sul" },
   ];
-  const colorMap: Record<string, string> = {
-    fechado: "var(--st-green-soft)",
-    qual: "var(--st-blue-soft)",
-    agend: "var(--sv-red-soft)",
-  };
-  const textMap: Record<string, string> = {
-    fechado: "#166534",
-    qual: "#1D4ED8",
-    agend: "var(--sv-red)",
-  };
+
   return (
     <div className="mockup">
       <div className="mockup-bar">
@@ -1104,144 +1224,981 @@ function AgendaMockup() {
         <span className="dot g" />
         <span className="url">controle.supervisao.com/agenda</span>
       </div>
-      <div style={{ padding: 20, background: "#fff" }}>
+      {/* HEADER navy escuro com 4 chips */}
+      <div
+        style={{
+          background:
+            "linear-gradient(135deg, #1B2A4A 0%, #243556 100%)",
+          color: "#fff",
+          padding: "16px 20px 18px",
+          position: "relative",
+          overflow: "hidden",
+        }}
+      >
         <div
           style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: 16,
+            position: "absolute",
+            top: -20,
+            right: -20,
+            width: 120,
+            height: 120,
+            borderRadius: "50%",
+            background: "rgba(255,255,255,0.04)",
+            filter: "blur(30px)",
+          }}
+        />
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1.4fr 1fr 1fr 1fr 1fr",
+            gap: 10,
+            alignItems: "stretch",
+            position: "relative",
+            zIndex: 1,
           }}
         >
           <div>
             <div
               style={{
-                fontSize: 10,
-                fontFamily: "var(--font-mono)",
-                color: "var(--slate-500)",
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-                fontWeight: 600,
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
               }}
             >
-              Quinta · 30/04
+              <span style={{ fontSize: 13 }}>📅</span>
+              <div
+                style={{
+                  fontFamily: "var(--font-display)",
+                  fontSize: 18,
+                  fontWeight: 800,
+                  letterSpacing: "-0.02em",
+                  color: "#fff",
+                }}
+              >
+                Agendamentos
+              </div>
+              <span
+                style={{
+                  width: 6,
+                  height: 6,
+                  borderRadius: "50%",
+                  background: "var(--st-green)",
+                  marginTop: 2,
+                  animation: "soffia-soft-pulse 1.6s infinite",
+                }}
+              />
             </div>
             <div
               style={{
-                fontFamily: "var(--font-display)",
-                fontSize: 24,
-                fontWeight: 800,
-                letterSpacing: "-0.02em",
-                color: "var(--navy)",
+                fontSize: 9.5,
+                color: "rgba(255,255,255,0.7)",
+                marginTop: 2,
+                fontFamily: "var(--font-mono)",
+                letterSpacing: "0.02em",
               }}
             >
-              6 agendamentos
+              Painel executivo · 4 hoje · 22 esta semana
             </div>
           </div>
-          <div style={{ display: "flex", gap: 6 }}>
-            <span
+          {/* 4 chips */}
+          {[
+            { l: "Hoje", v: "4", c: "rgba(255,255,255,0.10)", txt: "#fff" },
+            { l: "Semana", v: "22", c: "rgba(255,255,255,0.10)", txt: "#fff" },
+            { l: "Delivery hoje", v: "1", c: "rgba(255,255,255,0.10)", txt: "#fff" },
+            { l: "Pgto pendente", v: "3", c: "rgba(227,6,19,0.18)", txt: "#FF8A91" },
+          ].map((c) => (
+            <div
+              key={c.l}
               style={{
-                padding: "5px 10px",
-                borderRadius: 6,
-                background: "var(--st-green-soft)",
-                color: "#166534",
-                fontSize: 10,
-                fontFamily: "var(--font-mono)",
-                fontWeight: 700,
+                background: c.c,
+                border: "1px solid rgba(255,255,255,0.10)",
+                borderRadius: 8,
+                padding: "8px 10px",
               }}
             >
-              3 PRESENCIAL
-            </span>
-            <span
-              style={{
-                padding: "5px 10px",
-                borderRadius: 6,
-                background: "var(--sv-plum-soft)",
-                color: "#7E22CE",
-                fontSize: 10,
-                fontFamily: "var(--font-mono)",
-                fontWeight: 700,
-              }}
-            >
-              3 DELIVERY
-            </span>
-          </div>
+              <div
+                style={{
+                  fontSize: 8,
+                  fontFamily: "var(--font-mono)",
+                  letterSpacing: "0.08em",
+                  textTransform: "uppercase",
+                  color: "rgba(255,255,255,0.65)",
+                  fontWeight: 700,
+                }}
+              >
+                {c.l}
+              </div>
+              <div
+                style={{
+                  fontFamily: "var(--font-display)",
+                  fontWeight: 800,
+                  fontSize: 16,
+                  color: c.txt,
+                  letterSpacing: "-0.02em",
+                  marginTop: 1,
+                }}
+              >
+                {c.v}
+              </div>
+            </div>
+          ))}
         </div>
+        {/* RECEITA PREVISTA */}
+        <div
+          style={{
+            marginTop: 10,
+            paddingTop: 8,
+            borderTop: "1px solid rgba(255,255,255,0.10)",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <span
+            style={{
+              fontSize: 8.5,
+              fontFamily: "var(--font-mono)",
+              letterSpacing: "0.10em",
+              textTransform: "uppercase",
+              color: "rgba(255,255,255,0.55)",
+              fontWeight: 700,
+            }}
+          >
+            Receita prevista (semana)
+          </span>
+          <span
+            style={{
+              fontFamily: "var(--font-display)",
+              fontWeight: 800,
+              fontSize: 16,
+              color: "#fff",
+              letterSpacing: "-0.02em",
+            }}
+          >
+            R$ 5.248
+          </span>
+        </div>
+      </div>
+
+      {/* LISTA TEMPORAL */}
+      <div style={{ padding: 14, background: "#fff" }}>
+        {/* Toolbar */}
         <div
           style={{
             display: "flex",
-            flexDirection: "column",
+            alignItems: "center",
             gap: 6,
+            paddingBottom: 10,
+            borderBottom: "1px solid var(--slate-100)",
+            marginBottom: 10,
+            flexWrap: "wrap",
           }}
         >
+          <span
+            style={{
+              padding: "4px 9px",
+              background: "var(--navy)",
+              color: "#fff",
+              borderRadius: 5,
+              fontSize: 9,
+              fontFamily: "var(--font-mono)",
+              fontWeight: 700,
+              letterSpacing: "0.06em",
+              textTransform: "uppercase",
+            }}
+          >
+            Todos
+          </span>
+          <span
+            style={{
+              padding: "4px 9px",
+              background: "var(--slate-100)",
+              color: "var(--slate-600)",
+              borderRadius: 5,
+              fontSize: 9,
+              fontFamily: "var(--font-mono)",
+              fontWeight: 700,
+              letterSpacing: "0.06em",
+              textTransform: "uppercase",
+            }}
+          >
+            Presencial
+          </span>
+          <span
+            style={{
+              padding: "4px 9px",
+              background: "var(--sv-plum-soft)",
+              color: "#7E22CE",
+              borderRadius: 5,
+              fontSize: 9,
+              fontFamily: "var(--font-mono)",
+              fontWeight: 700,
+              letterSpacing: "0.06em",
+              textTransform: "uppercase",
+            }}
+          >
+            Delivery
+          </span>
+          <span style={{ marginLeft: "auto", color: "var(--sv-red)", fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: 10 }}>
+            Hoje
+          </span>
+        </div>
+
+        {/* Slots */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {slots.map((s) => (
-            <div
-              key={s.h}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 12,
-                padding: "10px 12px",
-                borderRadius: 10,
-                background: "var(--slate-50)",
-                border: "1px solid var(--slate-200)",
-              }}
-            >
-              <span
+            <div key={s.h} style={{ display: "flex", gap: 10, alignItems: "stretch" }}>
+              {/* Horário lateral */}
+              <div
                 style={{
-                  fontFamily: "var(--font-mono)",
-                  fontWeight: 700,
-                  fontSize: 12,
-                  color: "var(--navy)",
-                  width: 44,
+                  width: 46,
+                  flexShrink: 0,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "flex-start",
+                  paddingTop: 8,
                 }}
               >
-                {s.h}
-              </span>
-              <span
+                <div
+                  style={{
+                    fontFamily: "var(--font-display)",
+                    fontWeight: 800,
+                    fontSize: 13,
+                    color: "var(--navy)",
+                    letterSpacing: "-0.02em",
+                  }}
+                >
+                  {s.h}
+                </div>
+                <div
+                  style={{
+                    fontSize: 8,
+                    color: "var(--slate-500)",
+                    fontFamily: "var(--font-mono)",
+                    marginTop: 1,
+                  }}
+                >
+                  1 agend.
+                </div>
+              </div>
+              {/* Card */}
+              <div
                 style={{
                   flex: 1,
+                  padding: "8px 11px",
+                  background: "#fff",
+                  border: "1px solid var(--slate-200)",
+                  borderLeft: `3px solid ${s.t === "delivery" ? "#7E22CE" : "var(--st-green)"}`,
+                  borderRadius: 6,
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "flex-start",
+                  gap: 8,
+                }}
+              >
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6,
+                      marginBottom: 2,
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: 8,
+                        fontFamily: "var(--font-mono)",
+                        color: "var(--slate-500)",
+                        fontWeight: 700,
+                      }}
+                    >
+                      {s.h}
+                    </span>
+                    <span
+                      style={{
+                        padding: "1px 6px",
+                        borderRadius: 4,
+                        background: s.t === "delivery" ? "var(--sv-plum-soft)" : "var(--st-green-soft)",
+                        color: s.t === "delivery" ? "#7E22CE" : "#15803D",
+                        fontSize: 7.5,
+                        fontFamily: "var(--font-mono)",
+                        fontWeight: 800,
+                        letterSpacing: "0.08em",
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      {s.t}
+                    </span>
+                  </div>
+                  <div
+                    style={{
+                      fontFamily: "var(--font-display)",
+                      fontWeight: 700,
+                      fontSize: 12,
+                      color: "var(--navy)",
+                      letterSpacing: "-0.01em",
+                      marginBottom: 1,
+                    }}
+                  >
+                    {s.nome}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 10,
+                      color: "var(--slate-600)",
+                      marginBottom: 3,
+                    }}
+                  >
+                    {s.servico}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 8.5,
+                      fontFamily: "var(--font-mono)",
+                      color: "var(--slate-400)",
+                      letterSpacing: "0.04em",
+                      display: "flex",
+                      gap: 8,
+                    }}
+                  >
+                    <span>🚗 {s.placa}</span>
+                    <span>#{Math.random().toString(36).substr(2, 5).toUpperCase()}</span>
+                  </div>
+                </div>
+                <div style={{ textAlign: "right", flexShrink: 0 }}>
+                  <span
+                    style={{
+                      padding: "1.5px 6px",
+                      background: "var(--slate-100)",
+                      color: "var(--slate-600)",
+                      borderRadius: 999,
+                      fontSize: 7.5,
+                      fontFamily: "var(--font-mono)",
+                      fontWeight: 700,
+                      letterSpacing: "0.06em",
+                    }}
+                  >
+                    {s.unidade}
+                  </span>
+                  <div
+                    style={{
+                      marginTop: 4,
+                      fontFamily: "var(--font-display)",
+                      fontWeight: 800,
+                      fontSize: 14,
+                      color: "var(--st-green)",
+                      letterSpacing: "-0.02em",
+                    }}
+                  >
+                    R$ {s.valor}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============== KANBAN ==============
+function KanbanSection() {
+  return (
+    <section className="section section-pad" id="kanban">
+      <div className="container">
+        <Reveal>
+          <span className="eyebrow">
+            <span className="dot" /> Kanban de vendas
+          </span>
+        </Reveal>
+        <Reveal delay={1} style={{ marginTop: 18 }}>
+          <h2 className="h-section" style={{ maxWidth: 920 }}>
+            Cada cliente em <em className="soffia-mark">uma etapa</em>.<br />
+            Em tempo real.
+          </h2>
+        </Reveal>
+        <Reveal delay={2} style={{ marginTop: 16 }}>
+          <p className="lead">
+            Arrasta e solta entre etapas. Tags automáticas categorizam o serviço.
+            SLA acende quando demora. Sua unidade vê o funil de verdade — não a
+            planilha que ninguém atualiza.
+          </p>
+        </Reveal>
+
+        <Reveal delay={3} style={{ marginTop: 56 }}>
+          <KanbanMockup />
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
+interface KanbanCard {
+  nome: string;
+  origem: string;
+  tempo: string;
+  msg: string;
+  valor: string;
+  agend: string;
+  status: string;
+  sla?: boolean;
+}
+
+function KanbanMockup() {
+  // 5 colunas com bordas coloridas distintas (igual print real)
+  const columns: Array<{ titulo: string; cor: string; count: number; cards: KanbanCard[] }> = [
+    {
+      titulo: "Lead",
+      cor: "#EC4899", // pink
+      count: 18,
+      cards: [
+        {
+          nome: "Cliente L.",
+          origem: "google",
+          tempo: "1h",
+          msg: "Olá, gostaria de saber mais sobre as vistorias...",
+          valor: "—",
+          agend: "—",
+          status: "pendente",
+        },
+        {
+          nome: "Cliente M.",
+          origem: "meta",
+          tempo: "7h",
+          msg: "Vim pelo anúncio do Instagram",
+          valor: "—",
+          agend: "—",
+          status: "pendente",
+        },
+      ],
+    },
+    {
+      titulo: "Interesse",
+      cor: "#14B8A6", // teal
+      count: 22,
+      cards: [
+        {
+          nome: "Cliente A.",
+          origem: "vistoriacautelar",
+          tempo: "4h",
+          msg: "Gostaria de saber o valor da cautelar",
+          valor: "—",
+          agend: "—",
+          status: "pendente",
+        },
+        {
+          nome: "Cliente T.",
+          origem: "vistoriacautelar",
+          tempo: "10h",
+          msg: "Olá, acessei pelo Google e gostaria...",
+          valor: "—",
+          agend: "—",
+          status: "pendente",
+        },
+      ],
+    },
+    {
+      titulo: "Qualificado",
+      cor: "#3B82F6", // blue
+      count: 14,
+      cards: [
+        {
+          nome: "Cliente N.",
+          origem: "vistoriacautelar",
+          tempo: "9h",
+          msg: "Olá, acessei pelo site",
+          valor: "R$ 280",
+          agend: "Sex 14h",
+          status: "pendente",
+          sla: false,
+        },
+        {
+          nome: "Cliente G.",
+          origem: "google",
+          tempo: "5d",
+          msg: "Olá, acessei pelo Google",
+          valor: "R$ 211",
+          agend: "—",
+          status: "pendente",
+          sla: true,
+        },
+      ],
+    },
+    {
+      titulo: "Delivery",
+      cor: "#10B981", // green
+      count: 7,
+      cards: [
+        {
+          nome: "Cliente V.",
+          origem: "diagnosticoeletronico",
+          tempo: "agora",
+          msg: "Confirmado, pode vir no endereço",
+          valor: "R$ 380",
+          agend: "Hoje 16h",
+          status: "pendente",
+        },
+        {
+          nome: "Cliente L.",
+          origem: "vistoriacautelar",
+          tempo: "3h",
+          msg: "Endereço enviado",
+          valor: "R$ 211",
+          agend: "Hoje 17h",
+          status: "pendente",
+        },
+      ],
+    },
+    {
+      titulo: "Agendado",
+      cor: "#06B6D4", // cyan
+      count: 12,
+      cards: [
+        {
+          nome: "Cliente F.",
+          origem: "google",
+          tempo: "2h",
+          msg: "Confirmado, até amanhã!",
+          valor: "R$ 211",
+          agend: "Amanhã 9h",
+          status: "confirmado",
+        },
+      ],
+    },
+  ];
+
+  return (
+    <div className="mockup">
+      {/* Mockup bar */}
+      <div className="mockup-bar">
+        <span className="dot r" />
+        <span className="dot y" />
+        <span className="dot g" />
+        <span className="url">crm.supervisao.com/kanban</span>
+      </div>
+
+      {/* Toolbar do kanban */}
+      <div
+        style={{
+          padding: "12px 16px",
+          background: "#fff",
+          borderBottom: "1px solid var(--slate-100)",
+          display: "flex",
+          gap: 10,
+          alignItems: "center",
+          flexWrap: "wrap",
+        }}
+      >
+        <div
+          style={{
+            flex: 1,
+            minWidth: 180,
+            background: "var(--slate-50)",
+            border: "1px solid var(--slate-200)",
+            borderRadius: 8,
+            padding: "6px 10px",
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            fontSize: 11,
+            color: "var(--slate-500)",
+            fontFamily: "var(--font-sans)",
+          }}
+        >
+          <span>🔍</span>
+          <span>Pesquisar conversas...</span>
+        </div>
+        {/* Avatares dos atendentes */}
+        <div style={{ display: "flex", alignItems: "center", gap: -4 }}>
+          {["#3B82F6", "#10B981", "#F59E0B", "#EC4899", "#A855F7"].map((c, i) => (
+            <div
+              key={i}
+              style={{
+                width: 22,
+                height: 22,
+                borderRadius: "50%",
+                background: c,
+                color: "#fff",
+                display: "grid",
+                placeItems: "center",
+                fontFamily: "var(--font-mono)",
+                fontWeight: 700,
+                fontSize: 9,
+                border: "2px solid #fff",
+                marginLeft: i === 0 ? 0 : -6,
+              }}
+            >
+              {String.fromCharCode(65 + i)}
+            </div>
+          ))}
+          <span
+            style={{
+              fontSize: 10,
+              color: "var(--slate-500)",
+              fontFamily: "var(--font-mono)",
+              marginLeft: 6,
+              fontWeight: 600,
+            }}
+          >
+            +3
+          </span>
+        </div>
+        {/* Total ganho */}
+        <div
+          style={{
+            background: "#D1FAE5",
+            color: "#065F46",
+            padding: "6px 12px",
+            borderRadius: 999,
+            fontSize: 10,
+            fontFamily: "var(--font-mono)",
+            fontWeight: 700,
+            letterSpacing: "0.04em",
+          }}
+        >
+          R$ 12.480
+        </div>
+        {/* Calendário */}
+        <div
+          style={{
+            background: "var(--slate-50)",
+            border: "1px solid var(--slate-200)",
+            padding: "6px 10px",
+            borderRadius: 8,
+            fontSize: 10,
+            color: "var(--slate-600)",
+            fontFamily: "var(--font-mono)",
+            fontWeight: 600,
+            display: "flex",
+            alignItems: "center",
+            gap: 5,
+          }}
+        >
+          📅 Calendário
+        </div>
+        {/* Conversas total */}
+        <div
+          style={{
+            background: "var(--slate-50)",
+            border: "1px solid var(--slate-200)",
+            padding: "6px 10px",
+            borderRadius: 8,
+            fontSize: 10,
+            color: "var(--slate-600)",
+            fontFamily: "var(--font-mono)",
+            fontWeight: 600,
+            display: "flex",
+            alignItems: "center",
+            gap: 5,
+          }}
+        >
+          💬 412
+        </div>
+        {/* Unidade */}
+        <div
+          style={{
+            background: "var(--slate-50)",
+            border: "1px solid var(--slate-200)",
+            padding: "6px 10px",
+            borderRadius: 8,
+            fontSize: 10,
+            color: "var(--navy)",
+            fontFamily: "var(--font-mono)",
+            fontWeight: 700,
+            letterSpacing: "0.04em",
+            display: "flex",
+            alignItems: "center",
+            gap: 5,
+          }}
+        >
+          UNIDADE CENTRO ⌄
+        </div>
+      </div>
+
+      {/* Colunas do Kanban */}
+      <div
+        style={{
+          padding: "16px 14px",
+          background: "var(--slate-50)",
+          overflowX: "auto",
+        }}
+      >
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(5, minmax(180px, 1fr))",
+            gap: 10,
+            minWidth: 920,
+          }}
+        >
+          {columns.map((col) => (
+            <div key={col.titulo}>
+              {/* Header da coluna com borda colorida grossa em cima */}
+              <div
+                style={{
+                  background: "#fff",
+                  borderRadius: "6px 6px 0 0",
+                  borderTop: `3px solid ${col.cor}`,
+                  padding: "8px 10px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  fontFamily: "var(--font-display)",
+                  fontWeight: 700,
                   fontSize: 13,
-                  color: "var(--slate-700)",
-                  fontWeight: 500,
+                  color: "var(--navy)",
+                  letterSpacing: "-0.01em",
+                  borderLeft: "1px solid var(--slate-200)",
+                  borderRight: "1px solid var(--slate-200)",
                 }}
               >
-                {s.c}
-              </span>
-              <span
+                <span
+                  style={{
+                    color: "var(--slate-700)",
+                    fontWeight: 800,
+                  }}
+                >
+                  {col.count}
+                </span>
+                <span>{col.titulo}</span>
+              </div>
+
+              {/* Cards */}
+              <div
                 style={{
-                  padding: "3px 8px",
-                  borderRadius: 5,
-                  background: s.t === "delivery" ? "var(--sv-plum-soft)" : "var(--slate-100)",
-                  color: s.t === "delivery" ? "#7E22CE" : "var(--slate-600)",
-                  fontSize: 9,
-                  fontFamily: "var(--font-mono)",
-                  fontWeight: 700,
-                  letterSpacing: "0.06em",
-                  textTransform: "uppercase",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 8,
+                  padding: "8px 0",
                 }}
               >
-                {s.t}
-              </span>
-              <span
-                style={{
-                  padding: "3px 8px",
-                  borderRadius: 5,
-                  background: colorMap[s.st],
-                  color: textMap[s.st],
-                  fontSize: 9,
-                  fontFamily: "var(--font-mono)",
-                  fontWeight: 700,
-                  letterSpacing: "0.06em",
-                  textTransform: "uppercase",
-                }}
-              >
-                {s.st === "fechado"
-                  ? "fechado"
-                  : s.st === "qual"
-                  ? "qualif"
-                  : "agend"}
-              </span>
+                {col.cards.map((card, idx) => (
+                  <div
+                    key={idx}
+                    style={{
+                      background: "#fff",
+                      borderRadius: 8,
+                      border: `1px solid ${card.sla ? "rgba(239,68,68,0.5)" : "var(--slate-200)"}`,
+                      padding: "10px",
+                      boxShadow: "0 1px 2px rgba(15,23,42,0.04)",
+                    }}
+                  >
+                    {/* Header card */}
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        fontSize: 9,
+                        color: "var(--slate-500)",
+                        fontFamily: "var(--font-mono)",
+                        marginBottom: 6,
+                        fontWeight: 600,
+                      }}
+                    >
+                      <span>(Atend.) {col.titulo === "Lead" ? "Centro" : col.titulo === "Interesse" ? "Norte" : "Centro"}</span>
+                      <span style={{ color: card.sla ? "#EF4444" : "var(--slate-400)", fontWeight: card.sla ? 700 : 600 }}>
+                        {card.tempo}
+                        {card.sla && " · SLA!"}
+                      </span>
+                    </div>
+                    {/* Avatar + nome */}
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
+                        marginBottom: 6,
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: 24,
+                          height: 24,
+                          borderRadius: "50%",
+                          background: "#3B82F6",
+                          color: "#fff",
+                          display: "grid",
+                          placeItems: "center",
+                          fontWeight: 700,
+                          fontSize: 10,
+                          fontFamily: "var(--font-display)",
+                        }}
+                      >
+                        {card.nome[card.nome.length - 2]}
+                      </div>
+                      <div
+                        style={{
+                          fontFamily: "var(--font-display)",
+                          fontWeight: 700,
+                          fontSize: 12,
+                          color: "var(--navy)",
+                          letterSpacing: "-0.01em",
+                        }}
+                      >
+                        {card.nome}
+                      </div>
+                    </div>
+                    {/* Sub-nome */}
+                    <div
+                      style={{
+                        fontSize: 9.5,
+                        color: "var(--slate-500)",
+                        marginBottom: 6,
+                        fontStyle: "italic",
+                      }}
+                    >
+                      Atendente
+                    </div>
+                    {/* Mensagem */}
+                    <div
+                      style={{
+                        background: "var(--slate-50)",
+                        borderRadius: 6,
+                        padding: "6px 8px",
+                        fontSize: 10,
+                        color: "var(--slate-700)",
+                        lineHeight: 1.35,
+                        marginBottom: 8,
+                        border: "1px solid var(--slate-100)",
+                      }}
+                    >
+                      {card.msg}
+                    </div>
+                    {/* Grid Valor + Agendamento */}
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "1fr 1fr",
+                        gap: 4,
+                        marginBottom: 6,
+                      }}
+                    >
+                      <div
+                        style={{
+                          background: "var(--slate-50)",
+                          border: "1px solid var(--slate-100)",
+                          borderRadius: 6,
+                          padding: "5px 7px",
+                        }}
+                      >
+                        <div
+                          style={{
+                            fontSize: 7,
+                            fontFamily: "var(--font-mono)",
+                            color: "var(--slate-500)",
+                            letterSpacing: "0.08em",
+                            textTransform: "uppercase",
+                            fontWeight: 700,
+                          }}
+                        >
+                          Valor total
+                        </div>
+                        <div
+                          style={{
+                            fontFamily: "var(--font-display)",
+                            fontWeight: 800,
+                            fontSize: 11,
+                            color: "var(--st-green)",
+                            letterSpacing: "-0.01em",
+                            marginTop: 1,
+                          }}
+                        >
+                          {card.valor}
+                        </div>
+                      </div>
+                      <div
+                        style={{
+                          background: "var(--slate-50)",
+                          border: "1px solid var(--slate-100)",
+                          borderRadius: 6,
+                          padding: "5px 7px",
+                        }}
+                      >
+                        <div
+                          style={{
+                            fontSize: 7,
+                            fontFamily: "var(--font-mono)",
+                            color: "var(--slate-500)",
+                            letterSpacing: "0.08em",
+                            textTransform: "uppercase",
+                            fontWeight: 700,
+                          }}
+                        >
+                          Agendamento
+                        </div>
+                        <div
+                          style={{
+                            fontFamily: "var(--font-display)",
+                            fontWeight: 700,
+                            fontSize: 11,
+                            color: "var(--slate-700)",
+                            letterSpacing: "-0.01em",
+                            marginTop: 1,
+                          }}
+                        >
+                          {card.agend}
+                        </div>
+                      </div>
+                    </div>
+                    {/* Footer: tag + status */}
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        gap: 4,
+                      }}
+                    >
+                      <span
+                        style={{
+                          padding: "2px 6px",
+                          background: "var(--sv-plum-soft)",
+                          color: "#6D28D9",
+                          borderRadius: 4,
+                          fontSize: 8,
+                          fontFamily: "var(--font-mono)",
+                          fontWeight: 700,
+                          letterSpacing: "0.04em",
+                        }}
+                      >
+                        {card.origem}
+                      </span>
+                      <span
+                        style={{
+                          padding: "2px 6px",
+                          background: card.status === "confirmado" ? "var(--st-green-soft)" : "#FEF3C7",
+                          color: card.status === "confirmado" ? "#15803D" : "#92400E",
+                          borderRadius: 4,
+                          fontSize: 8,
+                          fontFamily: "var(--font-mono)",
+                          fontWeight: 700,
+                          letterSpacing: "0.06em",
+                          textTransform: "uppercase",
+                        }}
+                      >
+                        {card.status}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+                {col.cards.length < col.count && (
+                  <div
+                    style={{
+                      textAlign: "center",
+                      fontSize: 9,
+                      color: "var(--slate-400)",
+                      fontFamily: "var(--font-mono)",
+                      padding: 4,
+                      fontWeight: 600,
+                    }}
+                  >
+                    + {col.count - col.cards.length} cards
+                  </div>
+                )}
+              </div>
             </div>
           ))}
         </div>
@@ -1942,6 +2899,7 @@ function FloatingProgress() {
       "funil",
       "acessos",
       "agenda",
+      "kanban",
       "painel",
       "diferenca",
       "impacto",
@@ -1976,6 +2934,7 @@ function FloatingProgress() {
     funil: "Funil",
     acessos: "Acessos",
     agenda: "Agenda",
+    kanban: "Kanban",
     painel: "Painel",
     diferenca: "Diferença",
     impacto: "Impacto",
