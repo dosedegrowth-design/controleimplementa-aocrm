@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -215,18 +216,44 @@ export function CadastroClient() {
   const progresso = Math.round(((step + 1) / STEPS.length) * 100);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1B2A4A] via-[#243556] to-[#111D35] flex items-center justify-center p-4">
-      <div className="w-full max-w-2xl">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6 px-1">
+    <div className="min-h-screen relative bg-gradient-to-br from-[#1B2A4A] via-[#243556] to-[#111D35] flex items-center justify-center p-4 overflow-hidden">
+      {/* Glow decorativo */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute -top-32 -right-32 h-96 w-96 rounded-full bg-[#E30613]/10 blur-3xl" />
+        <div className="absolute -bottom-32 -left-32 h-96 w-96 rounded-full bg-blue-500/10 blur-3xl" />
+      </div>
+
+      <div className="w-full max-w-2xl relative">
+        {/* Header com logo real */}
+        <div className="flex items-center justify-between mb-7 px-1">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-lg bg-[#E31E24] font-bold text-white flex items-center justify-center text-lg">
-              S
-            </div>
-            <div>
-              <div className="text-sm font-bold text-white">SuperVisão</div>
-              <div className="text-[10px] uppercase tracking-wider text-slate-400">
+            <Image
+              src="/sv-logo.png"
+              alt="SuperVisão"
+              width={128}
+              height={28}
+              priority
+              style={{
+                height: 28,
+                width: "auto",
+                filter: "brightness(0) invert(1)",
+              }}
+            />
+            <div
+              style={{ borderLeft: "1px solid rgba(255,255,255,0.15)" }}
+              className="pl-3"
+            >
+              <div
+                className="text-[10px] uppercase tracking-[0.14em] text-slate-300 font-semibold"
+                style={{ fontFamily: "var(--font-jetbrains-mono), monospace" }}
+              >
                 Cadastro de Unidade
+              </div>
+              <div
+                className="text-[9px] text-slate-500 mt-0.5 tracking-wider"
+                style={{ fontFamily: "var(--font-jetbrains-mono), monospace" }}
+              >
+                CRM Oficial
               </div>
             </div>
           </div>
@@ -238,22 +265,50 @@ export function CadastroClient() {
                 setStep(0);
               }
             }}
-            className="text-[10px] text-slate-400 hover:text-white"
+            className="text-[10px] uppercase tracking-[0.14em] text-slate-400 hover:text-white transition-colors"
+            style={{ fontFamily: "var(--font-jetbrains-mono), monospace" }}
           >
-            Recomeçar
+            ↻ Recomeçar
           </button>
         </div>
 
-        {/* Progress */}
-        <div className="bg-white/10 rounded-full h-1.5 mb-6 overflow-hidden">
-          <div
-            className="h-full bg-[#E31E24] transition-all duration-300"
-            style={{ width: `${progresso}%` }}
-          />
+        {/* Progress com label + número da etapa */}
+        <div className="mb-7">
+          <div className="flex items-center justify-between mb-2">
+            <span
+              className="text-[9px] uppercase tracking-[0.18em] text-slate-400 font-semibold"
+              style={{ fontFamily: "var(--font-jetbrains-mono), monospace" }}
+            >
+              Etapa {step + 1} de {STEPS.length}
+            </span>
+            <span
+              className="text-[9px] uppercase tracking-[0.18em] text-[#E30613] font-bold tabular-nums"
+              style={{ fontFamily: "var(--font-jetbrains-mono), monospace" }}
+            >
+              {progresso}%
+            </span>
+          </div>
+          <div className="bg-white/8 rounded-full h-1 overflow-hidden">
+            <div
+              className="h-full transition-all duration-500 ease-out"
+              style={{
+                width: `${progresso}%`,
+                background:
+                  "linear-gradient(90deg, #E30613 0%, #FF3B47 100%)",
+                boxShadow: "0 0 12px rgba(227,6,19,0.6)",
+              }}
+            />
+          </div>
         </div>
 
-        {/* Card do step */}
-        <div className="bg-white rounded-2xl shadow-2xl p-6 sm:p-8">
+        {/* Card do step com sombra mais elegante */}
+        <div
+          className="bg-white rounded-2xl p-6 sm:p-10"
+          style={{
+            boxShadow:
+              "0 30px 80px -20px rgba(0,0,0,0.45), 0 12px 24px -8px rgba(0,0,0,0.2)",
+          }}
+        >
           {stepKey === "boas_vindas" && <StepBoasVindas onNext={next} />}
 
           {stepKey === "nome_unidade" && (
@@ -374,9 +429,15 @@ export function CadastroClient() {
           )}
         </div>
 
-        {/* Footer */}
-        <div className="text-center mt-6 text-xs text-slate-400">
-          Etapa {step + 1} de {STEPS.length} · Progresso salvo automaticamente neste navegador
+        {/* Footer minimalista */}
+        <div className="flex items-center justify-center gap-2 mt-6 text-[10px] text-slate-500">
+          <span className="h-1 w-1 rounded-full bg-emerald-400 animate-pulse" />
+          <span
+            className="uppercase tracking-[0.14em] font-medium"
+            style={{ fontFamily: "var(--font-jetbrains-mono), monospace" }}
+          >
+            Progresso salvo automaticamente
+          </span>
         </div>
       </div>
     </div>
@@ -865,54 +926,148 @@ function StepQtdAgentes({
   onNext: () => void;
   onPrev: () => void;
 }) {
+  // Avatares fake (iniciais) — letras viram dots
+  const initials = "ABCDEFGHIJKLMNO".slice(0, qtd).split("");
+  const avatarColors = [
+    "#E30613",
+    "#1B2A4A",
+    "#3B82F6",
+    "#10B981",
+    "#F59E0B",
+    "#A855F7",
+    "#EC4899",
+    "#06B6D4",
+    "#84CC16",
+    "#EF4444",
+    "#14B8A6",
+    "#8B5CF6",
+    "#F97316",
+    "#0EA5E9",
+    "#22C55E",
+  ];
+
   return (
     <div>
-      <div className="flex items-start gap-3 mb-6">
-        <div className="h-12 w-12 rounded-xl bg-red-50 flex items-center justify-center shrink-0">
-          <UsersIcon className="h-6 w-6 text-[#E31E24]" />
-        </div>
-        <div>
-          <h2 className="text-xl font-bold text-[#1B2A4A]">
-            Quantas pessoas vão atender?
-          </h2>
-          <p className="text-sm text-slate-600 mt-1">
-            Inclua você e todos os atendentes que precisam acessar o CRM.
-          </p>
-        </div>
+      {/* Header com ícone discreto */}
+      <div className="flex items-start gap-3 mb-2">
+        <span
+          className="text-[10px] uppercase tracking-[0.18em] font-bold text-[#E30613]"
+          style={{ fontFamily: "var(--font-jetbrains-mono), monospace" }}
+        >
+          ● Sua equipe
+        </span>
       </div>
-      <div className="bg-slate-50 rounded-xl p-6 text-center">
-        <div className="text-6xl font-bold text-[#1B2A4A]">{qtd}</div>
-        <div className="text-sm text-slate-500 mt-1">
+      <h2
+        className="text-2xl sm:text-[28px] font-bold text-[#1B2A4A] leading-tight tracking-tight"
+        style={{ fontFamily: "var(--font-archivo), 'Inter Tight', sans-serif" }}
+      >
+        Quantas pessoas vão atender?
+      </h2>
+      <p className="text-sm text-slate-600 mt-2 max-w-md">
+        Inclua você e todos os atendentes que precisam acessar o CRM. Você pode
+        ajustar depois.
+      </p>
+
+      {/* NÚMERO GRANDE EM DISPLAY */}
+      <div className="mt-8 mb-2 flex items-baseline justify-center gap-3">
+        <span
+          className="text-[88px] sm:text-[112px] font-bold leading-none tabular-nums"
+          style={{
+            fontFamily:
+              "var(--font-archivo), 'Inter Tight', sans-serif",
+            letterSpacing: "-0.06em",
+            background:
+              "linear-gradient(135deg, #1B2A4A 0%, #E30613 100%)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            backgroundClip: "text",
+          }}
+        >
+          {qtd}
+        </span>
+        <span
+          className="text-sm text-slate-500 uppercase tracking-[0.14em] font-semibold pb-3"
+          style={{ fontFamily: "var(--font-jetbrains-mono), monospace" }}
+        >
           {qtd === 1 ? "pessoa" : "pessoas"}
-        </div>
-        <div className="flex items-center justify-center gap-3 mt-4">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => onChange(Math.max(1, qtd - 1))}
-            disabled={qtd <= 1}
+        </span>
+      </div>
+
+      {/* AVATARES VISUAIS — feedback visual da quantidade */}
+      <div className="flex flex-wrap items-center justify-center gap-1.5 mb-7 min-h-[36px]">
+        {initials.map((letter, i) => (
+          <div
+            key={i}
+            className="h-8 w-8 rounded-full flex items-center justify-center text-white text-[11px] font-bold transition-all"
+            style={{
+              background: avatarColors[i % avatarColors.length],
+              fontFamily:
+                "var(--font-archivo), 'Inter Tight', sans-serif",
+              boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+              animation: `dotIn 0.3s ease-out ${i * 30}ms backwards`,
+            }}
           >
-            −
-          </Button>
+            {letter}
+          </div>
+        ))}
+      </div>
+
+      {/* CONTROLES — − slider + */}
+      <div className="flex items-center gap-3 max-w-md mx-auto">
+        <button
+          onClick={() => onChange(Math.max(1, qtd - 1))}
+          disabled={qtd <= 1}
+          aria-label="Diminuir"
+          className="h-11 w-11 rounded-full bg-white border border-slate-200 text-[#1B2A4A] font-bold text-lg flex items-center justify-center hover:border-[#E30613] hover:text-[#E30613] hover:shadow-md disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+        >
+          −
+        </button>
+        <div className="flex-1 relative">
           <input
             type="range"
             min={1}
             max={15}
             value={qtd}
             onChange={(e) => onChange(parseInt(e.target.value))}
-            className="flex-1 max-w-xs accent-[#E31E24]"
+            aria-label="Quantidade de atendentes"
+            className="w-full cadastro-range"
+            style={{ accentColor: "#E30613" }}
           />
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => onChange(Math.min(15, qtd + 1))}
-            disabled={qtd >= 15}
-          >
-            +
-          </Button>
+          {/* Marcadores */}
+          <div className="flex justify-between mt-1 px-0.5">
+            {[1, 5, 10, 15].map((n) => (
+              <span
+                key={n}
+                className={`text-[9px] tabular-nums ${
+                  qtd >= n ? "text-[#E30613] font-bold" : "text-slate-400"
+                }`}
+                style={{ fontFamily: "var(--font-jetbrains-mono), monospace" }}
+              >
+                {n}
+              </span>
+            ))}
+          </div>
         </div>
+        <button
+          onClick={() => onChange(Math.min(15, qtd + 1))}
+          disabled={qtd >= 15}
+          aria-label="Aumentar"
+          className="h-11 w-11 rounded-full bg-[#E30613] text-white font-bold text-lg flex items-center justify-center hover:bg-[#C40510] hover:shadow-lg disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+          style={{ boxShadow: "0 4px 12px -2px rgba(227,6,19,0.35)" }}
+        >
+          +
+        </button>
       </div>
-      <div className="flex justify-between gap-3 mt-6">
+
+      {/* Hint dinâmica */}
+      <p className="text-center text-[11px] text-slate-500 mt-5">
+        {qtd <= 2 && "Operação enxuta — pode crescer depois ✨"}
+        {qtd > 2 && qtd <= 6 && "Time pequeno e ágil 🚀"}
+        {qtd > 6 && qtd <= 10 && "Operação consolidada 💪"}
+        {qtd > 10 && "Time robusto — perfeito pra escalar 🔥"}
+      </p>
+
+      <div className="flex justify-between gap-3 mt-10">
         <Button variant="ghost" onClick={onPrev}>
           <ArrowLeft className="h-4 w-4" /> Voltar
         </Button>
@@ -920,6 +1075,51 @@ function StepQtdAgentes({
           Próximo <ArrowRight className="h-4 w-4" />
         </Button>
       </div>
+
+      <style jsx>{`
+        @keyframes dotIn {
+          from {
+            opacity: 0;
+            transform: scale(0.5);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+        .cadastro-range {
+          -webkit-appearance: none;
+          appearance: none;
+          height: 6px;
+          background: #e2e8f0;
+          border-radius: 999px;
+          outline: none;
+        }
+        .cadastro-range::-webkit-slider-thumb {
+          -webkit-appearance: none;
+          appearance: none;
+          width: 22px;
+          height: 22px;
+          background: #ffffff;
+          border: 3px solid #e30613;
+          border-radius: 50%;
+          cursor: pointer;
+          box-shadow: 0 4px 12px -2px rgba(227, 6, 19, 0.4);
+          transition: transform 0.15s ease;
+        }
+        .cadastro-range::-webkit-slider-thumb:hover {
+          transform: scale(1.15);
+        }
+        .cadastro-range::-moz-range-thumb {
+          width: 22px;
+          height: 22px;
+          background: #ffffff;
+          border: 3px solid #e30613;
+          border-radius: 50%;
+          cursor: pointer;
+          box-shadow: 0 4px 12px -2px rgba(227, 6, 19, 0.4);
+        }
+      `}</style>
     </div>
   );
 }
