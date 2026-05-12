@@ -2,6 +2,14 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import {
+  maskTelefoneBR,
+  isTelefoneValido,
+  isEmailValido,
+  maskInstagram,
+  titleCase,
+  cleanEmail,
+} from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -447,35 +455,162 @@ export function CadastroClient() {
 // ==================== STEPS ====================
 
 function StepBoasVindas({ onNext }: { onNext: () => void }) {
+  const checklist = [
+    {
+      label: "Nome e endereço da unidade",
+      icon: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M3 21h18M5 21V7l7-4 7 4v14" />
+          <path d="M9 9h.01M15 9h.01M9 13h.01M15 13h.01M9 17h.01M15 17h.01" />
+        </svg>
+      ),
+    },
+    {
+      label: "Seu nome e contato (franqueado)",
+      icon: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="8" r="4" />
+          <path d="M4 21a8 8 0 0 1 16 0" />
+        </svg>
+      ),
+    },
+    {
+      label: "Número(s) de WhatsApp da unidade",
+      icon: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+        </svg>
+      ),
+    },
+    {
+      label: "Lista de atendentes (nome + email)",
+      icon: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+        </svg>
+      ),
+    },
+  ];
+
   return (
-    <div className="text-center py-2">
-      <div className="h-16 w-16 mx-auto bg-gradient-to-br from-[#1B2A4A] to-[#E31E24] rounded-2xl flex items-center justify-center mb-4">
-        <Sparkles className="h-8 w-8 text-white" />
+    <div className="py-2">
+      {/* Eyebrow */}
+      <div className="flex items-center justify-center gap-2 mb-5">
+        <span className="h-1.5 w-1.5 rounded-full bg-[#E30613] animate-pulse" />
+        <span
+          className="text-[10px] uppercase tracking-[0.18em] font-bold text-[#E30613]"
+          style={{ fontFamily: "var(--font-jetbrains-mono), monospace" }}
+        >
+          Bem-vindo
+        </span>
       </div>
-      <h1 className="text-2xl font-bold text-[#1B2A4A] mb-2">
-        Bem-vindo ao cadastro da sua unidade!
+
+      {/* Headline em Archivo display */}
+      <h1
+        className="text-[28px] sm:text-[36px] font-bold text-[#1B2A4A] leading-[1.05] tracking-tight text-center mx-auto max-w-lg"
+        style={{ fontFamily: "var(--font-archivo), 'Inter Tight', sans-serif" }}
+      >
+        Vamos configurar a sua{" "}
+        <span
+          style={{
+            background: "linear-gradient(135deg, #E30613 0%, #A30309 60%, #1B2A4A 100%)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            backgroundClip: "text",
+          }}
+        >
+          unidade
+        </span>
+        .
       </h1>
-      <p className="text-sm text-slate-600 mb-6 max-w-md mx-auto">
-        Em alguns minutos coletamos tudo que precisamos pra criar o painel no CRM,
-        configurar o WhatsApp e ativar os acessos do seu time.
+
+      <p className="text-[15px] text-slate-600 mt-4 max-w-md mx-auto text-center leading-relaxed">
+        Em ~5 minutos coletamos tudo que precisamos pra criar o painel,
+        configurar seu WhatsApp e liberar os acessos do time.
       </p>
-      <div className="bg-slate-50 rounded-lg p-4 mb-6 text-left max-w-md mx-auto">
-        <p className="text-xs uppercase font-bold text-slate-500 mb-2">
-          Tenha em mãos:
-        </p>
-        <ul className="text-sm text-slate-700 space-y-1.5">
-          <li>🏢 Nome e endereço da unidade</li>
-          <li>👤 Seu nome e contato (franqueado)</li>
-          <li>📞 Número(s) de WhatsApp da unidade</li>
-          <li>👥 Lista de atendentes (nome + email)</li>
+
+      {/* Card "Tenha em mãos" — refinado */}
+      <div
+        className="mt-8 rounded-xl border border-slate-200 bg-white"
+        style={{
+          boxShadow: "0 1px 2px rgba(15,23,42,0.03)",
+        }}
+      >
+        <div
+          className="px-5 py-3 border-b border-slate-100 flex items-center gap-2"
+          style={{ background: "#F8FAFC" }}
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="text-slate-400"
+          >
+            <path d="m5 12 5 5L20 7" />
+          </svg>
+          <span
+            className="text-[10px] uppercase tracking-[0.14em] font-bold text-slate-500"
+            style={{ fontFamily: "var(--font-jetbrains-mono), monospace" }}
+          >
+            Tenha em mãos
+          </span>
+        </div>
+        <ul className="divide-y divide-slate-100">
+          {checklist.map((item, i) => (
+            <li
+              key={i}
+              className="flex items-center gap-3 px-5 py-3 text-[14px] text-slate-700"
+            >
+              <span
+                className="h-8 w-8 rounded-lg bg-[#FEE2E4] text-[#E30613] flex items-center justify-center shrink-0"
+                style={{ boxShadow: "inset 0 0 0 1px rgba(227,6,19,0.08)" }}
+              >
+                <span style={{ width: 16, height: 16, display: "block" }}>
+                  {item.icon}
+                </span>
+              </span>
+              <span className="font-medium">{item.label}</span>
+            </li>
+          ))}
         </ul>
       </div>
-      <Button onClick={onNext} size="lg" className="w-full sm:w-auto">
+
+      {/* CTA grandão estilo .btn-red */}
+      <button
+        onClick={onNext}
+        className="mt-8 w-full flex items-center justify-center gap-2 rounded-xl px-6 py-4 text-white font-semibold text-[15px] tracking-tight transition-all hover:-translate-y-0.5"
+        style={{
+          background: "#E30613",
+          boxShadow: "0 12px 28px -8px rgba(227,6,19,0.5)",
+          fontFamily: "var(--font-inter-tight), sans-serif",
+        }}
+        onMouseEnter={(e) => {
+          (e.currentTarget as HTMLButtonElement).style.background = "#C40510";
+          (e.currentTarget as HTMLButtonElement).style.boxShadow =
+            "0 18px 36px -10px rgba(227,6,19,0.6)";
+        }}
+        onMouseLeave={(e) => {
+          (e.currentTarget as HTMLButtonElement).style.background = "#E30613";
+          (e.currentTarget as HTMLButtonElement).style.boxShadow =
+            "0 12px 28px -8px rgba(227,6,19,0.5)";
+        }}
+      >
         Começar cadastro
-        <ArrowRight className="h-4 w-4 ml-1" />
-      </Button>
-      <p className="text-[10px] text-slate-400 mt-3">
-        Pode fechar e voltar — seu progresso fica salvo neste navegador.
+        <ArrowRight className="h-4 w-4" />
+      </button>
+
+      <p
+        className="text-center mt-4 text-[10px] uppercase tracking-[0.14em] text-slate-400"
+        style={{ fontFamily: "var(--font-jetbrains-mono), monospace" }}
+      >
+        ↻ Pode fechar e voltar — progresso salvo
       </p>
     </div>
   );
@@ -678,7 +813,10 @@ function StepFranqueado({
           <Input
             value={nome}
             onChange={(e) => onChange(e.target.value, email)}
+            onBlur={(e) => onChange(titleCase(e.target.value), email)}
             placeholder="Ex: João da Silva"
+            autoCapitalize="words"
+            autoComplete="name"
             autoFocus
             className="h-12 text-base mt-1.5"
           />
@@ -687,13 +825,42 @@ function StepFranqueado({
           <Label className="text-xs flex items-center gap-1.5">
             <Mail className="h-3 w-3" /> Seu email (opcional)
           </Label>
-          <Input
-            type="email"
-            value={email}
-            onChange={(e) => onChange(nome, e.target.value)}
-            placeholder="seu@email.com"
-            className="h-12 text-base mt-1.5"
-          />
+          <div className="relative">
+            <Input
+              type="email"
+              value={email}
+              onChange={(e) => onChange(nome, e.target.value)}
+              onBlur={(e) => onChange(nome, cleanEmail(e.target.value))}
+              placeholder="seu@email.com"
+              inputMode="email"
+              autoComplete="email"
+              autoCapitalize="off"
+              className={`h-12 text-base mt-1.5 pr-10 lowercase ${
+                email && !isEmailValido(email)
+                  ? "border-amber-300"
+                  : ""
+              } ${isEmailValido(email) ? "border-emerald-300" : ""}`}
+            />
+            {email.length > 0 && (
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 mt-0.5">
+                {isEmailValido(email) ? (
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="m5 12 5 5L20 7" />
+                  </svg>
+                ) : (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M12 8v4M12 16h.01" />
+                  </svg>
+                )}
+              </span>
+            )}
+          </div>
+          {email && !isEmailValido(email) && (
+            <p className="text-[11px] text-amber-600 mt-1.5">
+              Verifica o email — formato esperado nome@dominio.com
+            </p>
+          )}
         </div>
       </div>
       <div className="flex justify-between gap-3 mt-6">
@@ -719,7 +886,14 @@ function StepTelefoneFranqueado({
   onNext: () => void;
   onPrev: () => void;
 }) {
-  const podeAvancar = telefone.trim().length > 0;
+  const valido = isTelefoneValido(telefone);
+  const tocado = telefone.length > 0;
+  const podeAvancar = valido;
+
+  function handleChange(raw: string) {
+    onChange(maskTelefoneBR(raw));
+  }
+
   return (
     <div>
       <div className="flex items-start gap-3 mb-6">
@@ -729,19 +903,56 @@ function StepTelefoneFranqueado({
         <div>
           <h2 className="text-xl font-bold text-[#1B2A4A]">Seu WhatsApp pessoal</h2>
           <p className="text-sm text-slate-600 mt-1">
-            Pra nosso time entrar em contato com você diretamente. Inclua DDD.
+            Pra nosso time entrar em contato com você diretamente.
           </p>
         </div>
       </div>
-      <Input
-        value={telefone}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder="Ex: (11) 99999-9999"
-        autoFocus
-        className="h-12 text-base"
-        onKeyDown={(e) => e.key === "Enter" && podeAvancar && onNext()}
-      />
-      <div className="flex justify-between gap-3 mt-6">
+      <div className="relative">
+        <Input
+          value={telefone}
+          onChange={(e) => handleChange(e.target.value)}
+          placeholder="(11) 99999-9999"
+          autoFocus
+          inputMode="tel"
+          autoComplete="tel"
+          maxLength={16}
+          className={`h-14 text-base pl-4 pr-12 tabular-nums tracking-wide font-medium ${
+            tocado && !valido ? "border-red-400 focus-visible:ring-red-300" : ""
+          } ${valido ? "border-emerald-400 focus-visible:ring-emerald-300" : ""}`}
+          style={{ fontFamily: "var(--font-jetbrains-mono), monospace" }}
+          onKeyDown={(e) => e.key === "Enter" && podeAvancar && onNext()}
+        />
+        {/* Status icon à direita */}
+        {tocado && (
+          <span className="absolute right-4 top-1/2 -translate-y-1/2">
+            {valido ? (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="m5 12 5 5L20 7" />
+              </svg>
+            ) : (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M12 8v4M12 16h.01" />
+              </svg>
+            )}
+          </span>
+        )}
+      </div>
+      {/* Hint dinâmica */}
+      <p
+        className={`text-[11px] mt-2 transition-colors ${
+          tocado && !valido
+            ? "text-amber-600"
+            : valido
+              ? "text-emerald-600"
+              : "text-slate-500"
+        }`}
+      >
+        {!tocado && "💡 Inclua DDD. A máscara já formata pra você."}
+        {tocado && !valido && "Faltam dígitos — número precisa ter DDD + 8 ou 9 dígitos"}
+        {valido && "✓ Número válido"}
+      </p>
+      <div className="flex justify-between gap-3 mt-8">
         <Button variant="ghost" onClick={onPrev}>
           <ArrowLeft className="h-4 w-4" /> Voltar
         </Button>
@@ -785,17 +996,42 @@ function StepNumerosInbox({
         </div>
       </div>
       <div className="space-y-2">
-        {numeros.map((n, idx) => (
+        {numeros.map((n, idx) => {
+          const valido = isTelefoneValido(n);
+          const tocado = n.length > 0;
+          return (
           <div key={idx} className="flex items-center gap-2">
-            <Input
-              value={n}
-              onChange={(e) => onUpdate(idx, e.target.value)}
-              placeholder={
-                idx === 0 ? "Ex: (11) 3333-3333" : "Outro número..."
-              }
-              autoFocus={idx === 0}
-              className="h-12 text-base flex-1"
-            />
+            <div className="flex-1 relative">
+              <Input
+                value={n}
+                onChange={(e) => onUpdate(idx, maskTelefoneBR(e.target.value))}
+                placeholder={
+                  idx === 0 ? "(11) 3333-3333" : "Outro número..."
+                }
+                autoFocus={idx === 0}
+                inputMode="tel"
+                autoComplete="off"
+                maxLength={16}
+                className={`h-12 text-base tabular-nums pr-10 ${
+                  tocado && !valido ? "border-amber-300" : ""
+                } ${valido ? "border-emerald-300" : ""}`}
+                style={{ fontFamily: "var(--font-jetbrains-mono), monospace" }}
+              />
+              {tocado && (
+                <span className="absolute right-3 top-1/2 -translate-y-1/2">
+                  {valido ? (
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="m5 12 5 5L20 7" />
+                    </svg>
+                  ) : (
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="10" />
+                      <path d="M12 8v4M12 16h.01" />
+                    </svg>
+                  )}
+                </span>
+              )}
+            </div>
             {numeros.length > 1 && (
               <Button
                 variant="ghost"
@@ -807,7 +1043,8 @@ function StepNumerosInbox({
               </Button>
             )}
           </div>
-        ))}
+          );
+        })}
         <Button
           variant="outline"
           size="sm"
@@ -898,7 +1135,10 @@ function StepAtendimento({
           <Input
             value={instagram}
             onChange={(e) => onChange(horario, contato, e.target.value)}
+            onBlur={(e) => onChange(horario, contato, maskInstagram(e.target.value))}
             placeholder="@suaunidade"
+            autoCapitalize="off"
+            autoComplete="off"
             className="h-12 text-base mt-1.5"
           />
         </div>
@@ -1169,19 +1409,46 @@ function StepDadosAgentes({
                 <Input
                   value={ag.nome}
                   onChange={(e) => onChange(idx, "nome", e.target.value)}
+                  onBlur={(e) => onChange(idx, "nome", titleCase(e.target.value))}
                   placeholder="Nome completo"
+                  autoCapitalize="words"
+                  autoComplete="off"
                   className="h-10 mt-1"
                 />
               </div>
               <div>
                 <Label className="text-[10px]">Email</Label>
-                <Input
-                  type="email"
-                  value={ag.email}
-                  onChange={(e) => onChange(idx, "email", e.target.value)}
-                  placeholder="email@..."
-                  className="h-10 mt-1"
-                />
+                <div className="relative">
+                  <Input
+                    type="email"
+                    value={ag.email}
+                    onChange={(e) => onChange(idx, "email", e.target.value)}
+                    onBlur={(e) => onChange(idx, "email", cleanEmail(e.target.value))}
+                    placeholder="email@..."
+                    inputMode="email"
+                    autoComplete="off"
+                    autoCapitalize="off"
+                    className={`h-10 mt-1 pr-8 lowercase ${
+                      ag.email && !isEmailValido(ag.email)
+                        ? "border-amber-300"
+                        : ""
+                    } ${isEmailValido(ag.email) ? "border-emerald-300" : ""}`}
+                  />
+                  {ag.email.length > 0 && (
+                    <span className="absolute right-2 top-1/2 -translate-y-1/2 mt-0.5">
+                      {isEmailValido(ag.email) ? (
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="m5 12 5 5L20 7" />
+                        </svg>
+                      ) : (
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <circle cx="12" cy="12" r="10" />
+                          <path d="M12 8v4M12 16h.01" />
+                        </svg>
+                      )}
+                    </span>
+                  )}
+                </div>
               </div>
               <div className="md:col-span-2">
                 <Label className="text-[10px]">Perfil</Label>
