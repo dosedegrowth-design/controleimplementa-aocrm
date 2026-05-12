@@ -2,7 +2,35 @@
 
 import "./soffia.css";
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
+
+// Logo SuperVisão (PNG oficial 191x42 ≈ 4.55:1)
+function SVLogo({
+  height = 28,
+  onDark = false,
+}: {
+  height?: number;
+  onDark?: boolean;
+}) {
+  const width = Math.round(height * 4.55);
+  return (
+    <Image
+      src="/sv-logo.png"
+      alt="SuperVisão Vistorias Automotivas"
+      width={width}
+      height={height}
+      priority
+      style={{
+        height,
+        width: "auto",
+        display: "inline-block",
+        verticalAlign: "middle",
+        filter: onDark ? "brightness(0) invert(1)" : "none",
+      }}
+    />
+  );
+}
 
 const CTA = "/cadastro";
 
@@ -162,23 +190,8 @@ function Hero() {
                 boxShadow: "var(--shadow-sm)",
               }}
             >
-              <span
-                style={{
-                  width: 24,
-                  height: 24,
-                  borderRadius: 6,
-                  background: "var(--sv-red)",
-                  color: "#fff",
-                  fontWeight: 900,
-                  fontFamily: "var(--font-display)",
-                  display: "grid",
-                  placeItems: "center",
-                  fontSize: 14,
-                }}
-              >
-                S
-              </span>
-              <span className="crm-chip">CRM SuperVisão</span>
+              <SVLogo height={20} />
+              <span className="crm-chip">CRM</span>
             </div>
           </Reveal>
           <h1 className="h-display" style={{ marginTop: 28 }}>
@@ -2462,31 +2475,17 @@ function NotCommonCRM() {
             </div>
             <div className="cmp-col right">
               <div className="cmp-head">
-                <div
-                  style={{
-                    width: 28,
-                    height: 28,
-                    borderRadius: 8,
-                    background: "var(--sv-red)",
-                    color: "#fff",
-                    display: "grid",
-                    placeItems: "center",
-                    fontFamily: "var(--font-display)",
-                    fontWeight: 900,
-                    fontSize: 13,
-                  }}
-                >
-                  S
-                </div>
+                <SVLogo height={22} />
                 <span
                   style={{
                     fontFamily: "var(--font-display)",
                     fontWeight: 700,
                     fontSize: 17,
                     letterSpacing: "-0.01em",
+                    color: "var(--navy)",
                   }}
                 >
-                  CRM SuperVisão
+                  CRM oficial
                 </span>
               </div>
               {rows.map((r) => (
@@ -2877,42 +2876,36 @@ function Footer() {
             gap: 16,
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <span
+          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+            <SVLogo height={28} onDark />
+            <div
               style={{
-                width: 32,
-                height: 32,
-                borderRadius: 6,
-                background: "var(--sv-red)",
-                color: "#fff",
-                fontWeight: 900,
-                fontFamily: "var(--font-display)",
-                display: "grid",
-                placeItems: "center",
+                paddingLeft: 14,
+                borderLeft: "1px solid rgba(255,255,255,0.15)",
               }}
             >
-              S
-            </span>
-            <div>
-              <div
-                style={{
-                  color: "#fff",
-                  fontFamily: "var(--font-display)",
-                  fontWeight: 700,
-                  fontSize: 14,
-                }}
-              >
-                SuperVisão
-              </div>
               <div
                 style={{
                   fontSize: 10,
                   fontFamily: "var(--font-mono)",
                   letterSpacing: "0.10em",
                   textTransform: "uppercase",
+                  color: "rgba(255,255,255,0.7)",
+                  fontWeight: 600,
                 }}
               >
                 CRM Oficial
+              </div>
+              <div
+                style={{
+                  fontSize: 10,
+                  fontFamily: "var(--font-mono)",
+                  letterSpacing: "0.04em",
+                  color: "rgba(255,255,255,0.4)",
+                  marginTop: 1,
+                }}
+              >
+                por Dose de Growth
               </div>
             </div>
           </div>
