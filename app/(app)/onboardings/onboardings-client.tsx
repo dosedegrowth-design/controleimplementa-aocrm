@@ -35,8 +35,16 @@ import {
   Mail,
   MapPin,
   User as UserIcon,
+  Rocket,
+  RotateCw,
+  ExternalLink,
+  AlertTriangle,
 } from "lucide-react";
 import { timeAgo, formatDateTime } from "@/lib/utils";
+import { PageHero } from "@/components/page-hero";
+import { SectionHeader } from "@/components/section-header";
+import { KPICard } from "@/components/kpi-card";
+import { Sparkles, ListChecks, FileEdit, Hourglass, ThumbsUp, ThumbsDown, Rocket as RocketIcon } from "lucide-react";
 
 interface OnboardingSubmission {
   id: string;
@@ -57,8 +65,37 @@ interface OnboardingSubmission {
   aprovado_em: string | null;
   rejeitado_em: string | null;
   rejeicao_motivo: string | null;
+  provisionado_em: string | null;
+  unidade_id: string | null;
+  chatwoot_account_id: number | null;
   criado_em: string;
   atualizado_em: string;
+}
+
+interface ProvStep {
+  step: string;
+  ok: boolean;
+  data?: unknown;
+  error?: string;
+}
+
+interface ProvResult {
+  ok: boolean;
+  took_ms?: number;
+  result?: {
+    ok: boolean;
+    skipped?: boolean;
+    message?: string;
+    error?: string;
+    chatwoot?: {
+      account_id: number;
+      inbox_id: number;
+      funnel_id: number;
+      owner_email?: string;
+    };
+    steps?: ProvStep[];
+  };
+  error?: string;
 }
 
 const STATUS_LABELS: Record<string, { label: string; cor: string }> = {
@@ -122,35 +159,88 @@ export function OnboardingsClient({ submissoes }: { submissoes: OnboardingSubmis
   }
 
   return (
-    <div className="space-y-5 max-w-[1400px]">
-      <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div>
-          <h1 className="text-2xl font-bold text-[#1B2A4A]">Onboardings</h1>
-          <p className="text-sm text-slate-600">
-            Cadastros de novas unidades em andamento
-          </p>
-        </div>
-        <Button onClick={gerarLink} disabled={gerando}>
-          {gerando ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Plus className="h-4 w-4" />
-          )}
-          {gerando ? "Gerando..." : "Gerar novo link"}
-        </Button>
-      </div>
+    <>
+      <PageHero
+        eyebrow="Onboarding"
+        title="Cadastros de unidades"
+        subtitle={`${stats.total} submissões · ${stats.aguardando} aguardando revisão · ${stats.provisionados} já provisionadas no Chatwoot`}
+        icon={<Sparkles className="h-5 w-5" />}
+        actions={
+          <Button
+            onClick={gerarLink}
+            disabled={gerando}
+            className="bg-white text-[#1B2A4A] hover:bg-white/90"
+          >
+            {gerando ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Plus className="h-4 w-4" />
+            )}
+            {gerando ? "Gerando..." : "Gerar novo link"}
+          </Button>
+        }
+      />
 
       {/* KPIs */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-        <KPI label="Total" value={stats.total} cor="slate" />
-        <KPI label="Preenchendo" value={stats.preenchendo} cor="amber" onClick={() => setFiltroStatus("em_andamento")} />
-        <KPI label="Aguardando" value={stats.aguardando} cor="blue" onClick={() => setFiltroStatus("enviado")} />
-        <KPI label="Aprovados" value={stats.aprovados} cor="emerald" onClick={() => setFiltroStatus("aprovado")} />
-        <KPI label="Rejeitados" value={stats.rejeitados} cor="red" onClick={() => setFiltroStatus("rejeitado")} />
-        <KPI label="Provisionados" value={stats.provisionados} cor="purple" onClick={() => setFiltroStatus("provisionado")} />
+      <div>
+        <SectionHeader
+          icon={<ListChecks className="h-4 w-4" />}
+          title="Status dos onboardings"
+          subtitle="Clique pra filtrar a lista abaixo"
+        />
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          <KPICard
+            label="Total"
+            value={stats.total}
+            icon={ListChecks}
+            accent="navy"
+            delay={0}
+            onClick={() => setFiltroStatus("all")}
+          />
+          <KPICard
+            label="Preenchendo"
+            value={stats.preenchendo}
+            icon={FileEdit}
+            accent="warn"
+            delay={0.05}
+            onClick={() => setFiltroStatus("em_andamento")}
+          />
+          <KPICard
+            label="Aguardando"
+            value={stats.aguardando}
+            icon={Hourglass}
+            accent="info"
+            delay={0.1}
+            onClick={() => setFiltroStatus("enviado")}
+            highlight={stats.aguardando > 0}
+          />
+          <KPICard
+            label="Aprovados"
+            value={stats.aprovados}
+            icon={ThumbsUp}
+            accent="success"
+            delay={0.15}
+            onClick={() => setFiltroStatus("aprovado")}
+          />
+          <KPICard
+            label="Rejeitados"
+            value={stats.rejeitados}
+            icon={ThumbsDown}
+            accent="danger"
+            delay={0.2}
+            onClick={() => setFiltroStatus("rejeitado")}
+          />
+          <KPICard
+            label="Provisionados"
+            value={stats.provisionados}
+            icon={RocketIcon}
+            accent="navy"
+            delay={0.25}
+            onClick={() => setFiltroStatus("provisionado")}
+          />
+        </div>
       </div>
 
-      {/* Botão limpar filtro */}
       {filtroStatus !== "all" && (
         <button
           onClick={() => setFiltroStatus("all")}
@@ -162,7 +252,7 @@ export function OnboardingsClient({ submissoes }: { submissoes: OnboardingSubmis
 
       {/* Lista */}
       <Card>
-        <CardContent className="p-0">
+        <CardContent className="!p-0">
           {filtradas.length === 0 ? (
             <div className="p-12 text-center text-sm text-slate-500">
               {filtroStatus === "all"
@@ -227,46 +317,7 @@ export function OnboardingsClient({ submissoes }: { submissoes: OnboardingSubmis
         onClose={() => setSelecionada(null)}
         onAction={() => router.refresh()}
       />
-    </div>
-  );
-}
-
-function KPI({
-  label,
-  value,
-  cor,
-  onClick,
-}: {
-  label: string;
-  value: number;
-  cor: "slate" | "amber" | "blue" | "emerald" | "red" | "purple";
-  onClick?: () => void;
-}) {
-  const corMap = {
-    slate: "border-slate-200",
-    amber: "border-amber-200 hover:border-amber-300",
-    blue: "border-blue-200 hover:border-blue-300",
-    emerald: "border-emerald-200 hover:border-emerald-300",
-    red: "border-red-200 hover:border-red-300",
-    purple: "border-purple-200 hover:border-purple-300",
-  };
-  const textCor = {
-    slate: "text-slate-700",
-    amber: "text-amber-700",
-    blue: "text-blue-700",
-    emerald: "text-emerald-700",
-    red: "text-red-700",
-    purple: "text-purple-700",
-  };
-  return (
-    <button
-      onClick={onClick}
-      disabled={!onClick}
-      className={`bg-white rounded-lg border p-4 text-left transition-colors ${corMap[cor]} ${onClick ? "cursor-pointer" : "cursor-default"}`}
-    >
-      <p className="text-[10px] uppercase font-bold tracking-wider text-slate-500">{label}</p>
-      <p className={`text-2xl font-bold mt-1 ${textCor[cor]}`}>{value}</p>
-    </button>
+    </>
   );
 }
 
@@ -329,6 +380,9 @@ function SubmissionDrawer({
   const [confirmRejeitar, setConfirmRejeitar] = useState(false);
   const [confirmAprovar, setConfirmAprovar] = useState(false);
   const [providerEscolhido, setProviderEscolhido] = useState<"whatsapp_cloud" | "waha" | null>(null);
+  const [provisionando, setProvisionando] = useState(false);
+  const [provResult, setProvResult] = useState<ProvResult | null>(null);
+  const [confirmReprov, setConfirmReprov] = useState(false);
 
   if (!submission) return null;
 
@@ -386,6 +440,31 @@ function SubmissionDrawer({
 
   function copiarLink() {
     navigator.clipboard.writeText(link);
+  }
+
+  async function provisionar(force: boolean) {
+    setProvisionando(true);
+    setProvResult(null);
+    try {
+      const r = await fetch("/api/onboarding/admin/provisionar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ submission_id: submission!.id, force }),
+      });
+      const data = (await r.json()) as ProvResult;
+      setProvResult({ ...data, ok: r.ok && data.ok });
+      if (r.ok && data.ok) {
+        onAction(); // refresh lista
+      }
+    } catch (e) {
+      setProvResult({
+        ok: false,
+        error: e instanceof Error ? e.message : String(e),
+      });
+    } finally {
+      setProvisionando(false);
+      setConfirmReprov(false);
+    }
   }
 
   return (
@@ -502,30 +581,125 @@ function SubmissionDrawer({
           )}
 
           {submission.status === "aprovado" && (
-            <div className="bg-emerald-50 border border-emerald-200 rounded p-3">
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <p className="text-sm font-semibold text-emerald-800">
-                    ✓ Unidade criada no painel
-                  </p>
-                  <p className="text-xs text-emerald-600 mt-1">
-                    Aprovada em {submission.aprovado_em && formatDateTime(submission.aprovado_em)}
-                  </p>
+            <div className="space-y-3 border-t border-slate-200 pt-4">
+              <div className="bg-emerald-50 border border-emerald-200 rounded p-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <p className="text-sm font-semibold text-emerald-800">
+                      ✓ Unidade criada no painel
+                    </p>
+                    <p className="text-xs text-emerald-600 mt-1">
+                      Aprovada em {submission.aprovado_em && formatDateTime(submission.aprovado_em)}
+                    </p>
+                  </div>
+                  {submission.provider_chatwoot && (
+                    <span
+                      className={`text-[9px] uppercase font-bold tracking-wider px-2 py-1 rounded shrink-0 ${
+                        submission.provider_chatwoot === "whatsapp_cloud"
+                          ? "bg-blue-100 text-blue-800"
+                          : "bg-amber-100 text-amber-800"
+                      }`}
+                    >
+                      {submission.provider_chatwoot === "whatsapp_cloud"
+                        ? "Cloud (Meta)"
+                        : "WAHA"}
+                    </span>
+                  )}
                 </div>
-                {submission.provider_chatwoot && (
-                  <span
-                    className={`text-[9px] uppercase font-bold tracking-wider px-2 py-1 rounded shrink-0 ${
-                      submission.provider_chatwoot === "whatsapp_cloud"
-                        ? "bg-blue-100 text-blue-800"
-                        : "bg-amber-100 text-amber-800"
-                    }`}
-                  >
-                    {submission.provider_chatwoot === "whatsapp_cloud"
-                      ? "Cloud (Meta)"
-                      : "WAHA"}
-                  </span>
+              </div>
+
+              <div className="bg-white border border-slate-200 rounded-lg p-3 space-y-2">
+                <div className="flex items-center gap-2">
+                  <div className="h-7 w-7 rounded-full bg-amber-100 flex items-center justify-center">
+                    <Clock className="h-3.5 w-3.5 text-amber-700" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-slate-800">Chatwoot: aguardando provisionamento</p>
+                    <p className="text-[11px] text-slate-500">27 chamadas API (Account, Inbox, Agentes, Funil, Stages, Labels, Automações, Apps)</p>
+                  </div>
+                </div>
+                <Button
+                  onClick={() => provisionar(false)}
+                  disabled={provisionando}
+                  className="w-full"
+                >
+                  {provisionando ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Provisionando no Chatwoot…
+                    </>
+                  ) : (
+                    <>
+                      <Rocket className="h-4 w-4" />
+                      Provisionar agora no Chatwoot
+                    </>
+                  )}
+                </Button>
+                <p className="text-[10px] text-slate-400 text-center">
+                  Pode levar ~30s. Rollback automático em caso de falha.
+                </p>
+              </div>
+
+              {provResult && <ProvResultBlock result={provResult} />}
+            </div>
+          )}
+
+          {submission.status === "provisionado" && (
+            <div className="space-y-3 border-t border-slate-200 pt-4">
+              <div className="bg-purple-50 border border-purple-200 rounded p-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <p className="text-sm font-semibold text-purple-800">
+                      ✓ Provisionado no Chatwoot
+                    </p>
+                    <p className="text-xs text-purple-600 mt-1">
+                      {submission.provisionado_em && formatDateTime(submission.provisionado_em)}
+                    </p>
+                  </div>
+                  {submission.provider_chatwoot && (
+                    <span
+                      className={`text-[9px] uppercase font-bold tracking-wider px-2 py-1 rounded shrink-0 ${
+                        submission.provider_chatwoot === "whatsapp_cloud"
+                          ? "bg-blue-100 text-blue-800"
+                          : "bg-amber-100 text-amber-800"
+                      }`}
+                    >
+                      {submission.provider_chatwoot === "whatsapp_cloud"
+                        ? "Cloud (Meta)"
+                        : "WAHA"}
+                    </span>
+                  )}
+                </div>
+                {submission.chatwoot_account_id && (
+                  <div className="mt-3 flex items-center gap-2 text-xs">
+                    <span className="font-mono bg-white border border-purple-200 rounded px-2 py-1">
+                      Account #{submission.chatwoot_account_id}
+                    </span>
+                    <a
+                      href={`https://crmsupervisao.com/app/accounts/${submission.chatwoot_account_id}/dashboard`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-purple-700 hover:underline"
+                    >
+                      Abrir no Chatwoot
+                      <ExternalLink className="h-3 w-3" />
+                    </a>
+                  </div>
                 )}
               </div>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setConfirmReprov(true)}
+                disabled={provisionando}
+                className="w-full"
+              >
+                <RotateCw className="h-3.5 w-3.5" />
+                Reprovisionar (force)
+              </Button>
+
+              {provResult && <ProvResultBlock result={provResult} />}
             </div>
           )}
         </div>
@@ -631,7 +805,7 @@ function SubmissionDrawer({
               ) → 6 agentes → Funnel + 7 stages → 13 labels → 3 automações → 2 dashboards.
               <br />
               <span className="text-[10px] text-slate-500 italic mt-1 inline-block">
-                Por enquanto, aprovar cria só a unidade no painel interno. O provisionamento automático Chatwoot é o próximo passo.
+                Aprovar cria a unidade no painel. O provisionamento no Chatwoot é o próximo passo (botão &ldquo;Provisionar agora&rdquo; após aprovar).
               </span>
             </p>
           </div>
@@ -648,6 +822,37 @@ function SubmissionDrawer({
               {aprovando && <Loader2 className="h-4 w-4 animate-spin" />}
               <CheckCircle2 className="h-4 w-4" />
               Confirmar aprovação
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de reprovisionamento (force) */}
+      <Dialog open={confirmReprov} onOpenChange={setConfirmReprov}>
+        <DialogContent>
+          <DialogHeader>
+            <div className="flex items-center gap-2">
+              <div className="h-9 w-9 rounded-full bg-amber-100 flex items-center justify-center">
+                <AlertTriangle className="h-5 w-5 text-amber-700" />
+              </div>
+              <div>
+                <DialogTitle>Reprovisionar essa unidade?</DialogTitle>
+                <DialogDescription>
+                  Cria uma <span className="font-bold">nova Account</span> no Chatwoot.
+                  A account anterior (#{submission?.chatwoot_account_id || "?"}) <span className="font-bold">não é deletada automaticamente</span>.
+                  Use só se algo deu errado e quer começar do zero.
+                </DialogDescription>
+              </div>
+            </div>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setConfirmReprov(false)} disabled={provisionando}>
+              Cancelar
+            </Button>
+            <Button variant="destructive" onClick={() => provisionar(true)} disabled={provisionando}>
+              {provisionando && <Loader2 className="h-4 w-4 animate-spin" />}
+              <RotateCw className="h-4 w-4" />
+              Sim, reprovisionar
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -678,6 +883,102 @@ function SubmissionDrawer({
         </DialogContent>
       </Dialog>
     </Sheet>
+  );
+}
+
+function ProvResultBlock({ result }: { result: ProvResult }) {
+  const inner = result.result;
+  const steps = inner?.steps || [];
+  const success = result.ok && inner?.ok && !inner?.error;
+  const skipped = inner?.skipped === true;
+
+  return (
+    <div
+      className={`rounded-lg border p-3 space-y-2 ${
+        success
+          ? "bg-emerald-50 border-emerald-200"
+          : "bg-red-50 border-red-200"
+      }`}
+    >
+      <div className="flex items-start gap-2">
+        {success ? (
+          <CheckCircle2 className="h-4 w-4 text-emerald-700 mt-0.5 shrink-0" />
+        ) : (
+          <XCircle className="h-4 w-4 text-red-700 mt-0.5 shrink-0" />
+        )}
+        <div className="flex-1 min-w-0">
+          <p
+            className={`text-sm font-semibold ${
+              success ? "text-emerald-800" : "text-red-800"
+            }`}
+          >
+            {skipped
+              ? "Já estava provisionada"
+              : success
+                ? "Provisionado com sucesso"
+                : "Falha no provisionamento"}
+          </p>
+          {result.took_ms != null && (
+            <p className="text-[10px] text-slate-500">
+              Levou {(result.took_ms / 1000).toFixed(1)}s
+            </p>
+          )}
+        </div>
+      </div>
+
+      {inner?.chatwoot && (
+        <div className="flex flex-wrap gap-1.5 text-[10px]">
+          <span className="font-mono bg-white border border-slate-200 rounded px-1.5 py-0.5">
+            Account #{inner.chatwoot.account_id}
+          </span>
+          <span className="font-mono bg-white border border-slate-200 rounded px-1.5 py-0.5">
+            Inbox #{inner.chatwoot.inbox_id}
+          </span>
+          <span className="font-mono bg-white border border-slate-200 rounded px-1.5 py-0.5">
+            Funnel #{inner.chatwoot.funnel_id}
+          </span>
+        </div>
+      )}
+
+      {(result.error || inner?.error) && (
+        <p className="text-xs text-red-800 bg-white rounded p-2 border border-red-200 font-mono break-all">
+          {result.error || inner?.error}
+        </p>
+      )}
+
+      {steps.length > 0 && (
+        <details className="text-[11px]">
+          <summary className="cursor-pointer text-slate-600 hover:text-slate-800 font-medium">
+            Ver {steps.length} steps
+          </summary>
+          <ul className="mt-2 space-y-1 pl-1">
+            {steps.map((s, i) => (
+              <li key={i} className="flex items-start gap-1.5">
+                {s.ok ? (
+                  <CheckCircle2 className="h-3 w-3 text-emerald-600 mt-0.5 shrink-0" />
+                ) : (
+                  <XCircle className="h-3 w-3 text-red-600 mt-0.5 shrink-0" />
+                )}
+                <div className="flex-1">
+                  <p
+                    className={
+                      s.ok ? "text-slate-700" : "text-red-700 font-medium"
+                    }
+                  >
+                    {s.step}
+                  </p>
+                  {s.error && (
+                    <p className="text-[10px] text-red-600 font-mono break-all">
+                      {s.error}
+                    </p>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
+    </div>
   );
 }
 

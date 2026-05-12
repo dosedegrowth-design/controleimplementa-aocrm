@@ -28,7 +28,10 @@ import {
   ExternalLink,
   Loader2,
 } from "lucide-react";
-import { formatDateTime, timeAgo } from "@/lib/utils";
+import { timeAgo } from "@/lib/utils";
+import { PageHero, HeroKPI } from "@/components/page-hero";
+import { SectionHeader } from "@/components/section-header";
+import { Wifi, Filter as FilterIcon, LayoutGrid } from "lucide-react";
 
 interface InboxStatus {
   chatwoot_account_id: number;
@@ -163,18 +166,20 @@ export function CaixasEntradaClient({
   const hasFilters = busca !== "" || filtroStatus !== "all" || filtroProvider !== "all";
 
   return (
-    <div className="space-y-5 max-w-[1800px]">
-      {/* HEADER */}
-      <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div>
-          <h1 className="text-2xl font-bold text-[#1B2A4A]">Caixas de Entrada</h1>
-          <p className="text-sm text-slate-600">
-            Monitoramento WhatsApp das {stats.total} inboxes ativas no Chatwoot
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          {resultado && <span className="text-xs text-slate-600">{resultado}</span>}
-          <Button variant="outline" size="sm" onClick={verificarAgora} disabled={verificando}>
+    <>
+      <PageHero
+        eyebrow="Monitoramento"
+        title="Caixas de Entrada"
+        subtitle={`${stats.total} inboxes monitoradas · ${stats.online} ON · ${stats.offline} OFF · ${stats.cloud} via Cloud Meta`}
+        icon={<Wifi className="h-5 w-5" />}
+        actions={
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={verificarAgora}
+            disabled={verificando}
+            className="bg-white/10 text-white border-white/20 hover:bg-white/20"
+          >
             {verificando ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
@@ -182,17 +187,82 @@ export function CaixasEntradaClient({
             )}
             {verificando ? "Verificando..." : "Verificar agora"}
           </Button>
-        </div>
-      </div>
+        }
+        kpis={
+          <>
+            <HeroKPI
+              label="Online"
+              value={stats.online}
+              icon={<CheckCircle2 className="h-3.5 w-3.5" />}
+              accent="success"
+            />
+            <HeroKPI
+              label="Offline"
+              value={stats.offline}
+              icon={<XCircle className="h-3.5 w-3.5" />}
+              accent={stats.offline > 0 ? "danger" : "default"}
+            />
+            <HeroKPI
+              label="Cloud (Meta)"
+              value={stats.cloud}
+              icon={<Cloud className="h-3.5 w-3.5" />}
+            />
+          </>
+        }
+        bottom={
+          resultado ? (
+            <span>{resultado}</span>
+          ) : (
+            <span>
+              Verificação cruzada Chatwoot ↔ WAHA. Status do WhatsApp Cloud é gerenciado pela Meta.
+            </span>
+          )
+        }
+      />
 
-      {/* KPIs */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-        <KPICard label="Total Inboxes" value={stats.total} icon={Inbox} accent="default" />
-        <KPICard label="ONLINE" value={stats.online} icon={CheckCircle2} accent="success" />
-        <KPICard label="OFFLINE" value={stats.offline} icon={XCircle} accent="danger" />
-        <KPICard label="Cloud (N/A)" value={stats.cloud} icon={Cloud} accent="default" hint="Meta gerencia" />
-        <KPICard label="Sem status" value={stats.semStatus} icon={AlertOctagon} accent={stats.semStatus > 0 ? "warn" : "default"} hint="precisam verificar" />
-        <KPICard label="Sem inbox" value={stats.semInbox} icon={AlertOctagon} accent={stats.semInbox > 0 ? "warn" : "default"} hint="accounts sem WhatsApp" />
+      {/* KPIs detalhados */}
+      <div>
+        <SectionHeader
+          icon={<Inbox className="h-4 w-4" />}
+          title="Resumo das inboxes"
+          subtitle="Estado consolidado da rede"
+        />
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          <KPICard label="Total Inboxes" value={stats.total} icon={Inbox} accent="navy" delay={0} />
+          <KPICard label="Online" value={stats.online} icon={CheckCircle2} accent="success" delay={0.05} />
+          <KPICard
+            label="Offline"
+            value={stats.offline}
+            icon={XCircle}
+            accent="danger"
+            delay={0.1}
+            highlight={stats.offline > 0}
+          />
+          <KPICard
+            label="Cloud (N/A)"
+            value={stats.cloud}
+            icon={Cloud}
+            accent="info"
+            hint="Meta gerencia"
+            delay={0.15}
+          />
+          <KPICard
+            label="Sem status"
+            value={stats.semStatus}
+            icon={AlertOctagon}
+            accent={stats.semStatus > 0 ? "warn" : "default"}
+            hint="precisam verificar"
+            delay={0.2}
+          />
+          <KPICard
+            label="Sem inbox"
+            value={stats.semInbox}
+            icon={AlertOctagon}
+            accent={stats.semInbox > 0 ? "warn" : "default"}
+            hint="accounts sem WhatsApp"
+            delay={0.25}
+          />
+        </div>
       </div>
 
       {/* ALERTA SE TEM OFFLINE */}
@@ -277,15 +347,17 @@ export function CaixasEntradaClient({
       {/* QUEDAS RECENTES */}
       {quedas.length > 0 && (
         <Card>
-          <CardContent className="p-0">
-            <div className="p-4 border-b border-slate-200">
+          <CardContent className="!p-0">
+            <div className="px-5 py-3 border-b border-slate-200">
               <div className="flex items-center gap-2">
-                <Activity className="h-4 w-4 text-slate-600" />
-                <h2 className="text-base font-bold text-[#1B2A4A]">
+                <div className="w-7 h-7 rounded-lg bg-[#1B2A4A]/5 flex items-center justify-center text-[#1B2A4A]">
+                  <Activity className="h-3.5 w-3.5" />
+                </div>
+                <h2 className="text-sm md:text-base font-bold text-[#1B2A4A]">
                   Mudanças de status nas últimas 24h
                 </h2>
-                <span className="text-xs text-slate-500">
-                  ({quedas.length} eventos)
+                <span className="text-[10px] text-slate-500 ml-auto">
+                  {quedas.length} eventos
                 </span>
               </div>
             </div>
@@ -324,7 +396,7 @@ export function CaixasEntradaClient({
           </CardContent>
         </Card>
       )}
-    </div>
+    </>
   );
 }
 

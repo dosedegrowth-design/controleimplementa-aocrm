@@ -15,11 +15,9 @@ export function AppShell({
   const [collapsed, setCollapsed] = useState(false);
 
   useEffect(() => {
-    // Lê estado inicial do localStorage
     const saved = localStorage.getItem("sidebar_collapsed");
     if (saved === "true") setCollapsed(true);
 
-    // Escuta o evento custom da Sidebar
     const handler = (e: Event) => {
       const detail = (e as CustomEvent<{ collapsed: boolean }>).detail;
       setCollapsed(detail.collapsed);
@@ -33,11 +31,15 @@ export function AppShell({
       <Sidebar userEmail={userEmail} />
       <main
         className={cn(
-          "min-h-screen transition-all duration-200",
-          collapsed ? "ml-16" : "ml-64",
+          "min-h-screen transition-[margin] duration-200 pt-12 md:pt-0",
+          // No mobile não tem sidebar fixa (vira topbar + sheet)
+          "md:transition-all",
+          collapsed ? "md:ml-16" : "md:ml-[240px]",
         )}
       >
-        <div className="p-6 lg:p-8">{children}</div>
+        <div className="p-4 md:p-6 max-w-[1600px] mx-auto space-y-5 md:space-y-6 pb-safe">
+          {children}
+        </div>
       </main>
       <AlertasProvider />
     </div>

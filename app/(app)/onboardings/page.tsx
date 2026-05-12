@@ -22,6 +22,9 @@ interface OnboardingSubmission {
   aprovado_em: string | null;
   rejeitado_em: string | null;
   rejeicao_motivo: string | null;
+  provisionado_em: string | null;
+  unidade_id: string | null;
+  chatwoot_account_id: number | null;
   criado_em: string;
   atualizado_em: string;
 }

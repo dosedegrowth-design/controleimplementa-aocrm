@@ -1,10 +1,18 @@
 import { createClient, createServiceClient } from "@/lib/supabase/server";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { GerenciarUsuarios } from "./gerenciar-usuarios";
 import { SyncStatus } from "./sync-status";
 import { Badge } from "@/components/ui/badge";
+import { PageHero } from "@/components/page-hero";
+import { SectionHeader } from "@/components/section-header";
+import { Settings, User as UserIcon, Users, RefreshCw } from "lucide-react";
 import type { Usuario, SyncLog } from "@/lib/types";
-import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
@@ -14,7 +22,6 @@ export default async function ConfiguracoesPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Buscar profile do usuário logado
   const { data: meuProfile } = await supabase
     .from("usuarios")
     .select("*")
@@ -23,7 +30,6 @@ export default async function ConfiguracoesPage() {
 
   const isSuperAdmin = meuProfile?.role === "super_admin";
 
-  // Service client pra ler todos usuários (bypass RLS se houver)
   const service = createServiceClient();
   const { data: usuarios = [] } = await service
     .from("usuarios")
@@ -37,26 +43,32 @@ export default async function ConfiguracoesPage() {
     .limit(10);
 
   return (
-    <div className="space-y-6 max-w-5xl">
-      <div>
-        <h1 className="text-2xl font-bold text-[#1B2A4A]">Configurações</h1>
-        <p className="text-sm text-slate-600">
-          Gerenciar usuários, sincronização e preferências
-        </p>
-      </div>
+    <>
+      <PageHero
+        eyebrow="Sistema"
+        title="Configurações"
+        subtitle="Gerenciar usuários, sincronização e preferências do painel"
+        icon={<Settings className="h-5 w-5" />}
+      />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Sua conta</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2 text-sm">
+      <div>
+        <SectionHeader
+          icon={<UserIcon className="h-4 w-4" />}
+          title="Sua conta"
+          subtitle="Dados do usuário logado"
+        />
+        <Card>
+          <CardContent className="space-y-3 text-sm">
             <div className="flex items-center gap-2">
-              <span className="text-slate-500 w-32">Email:</span>
+              <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500 w-32 shrink-0">
+                Email
+              </span>
               <span className="font-medium text-slate-800">{user?.email}</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-slate-500 w-32">Perfil:</span>
+              <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500 w-32 shrink-0">
+                Perfil
+              </span>
               {meuProfile ? (
                 <Badge variant="outline">{meuProfile.role}</Badge>
               ) : (
@@ -66,17 +78,35 @@ export default async function ConfiguracoesPage() {
               )}
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-slate-500 w-32">Nome:</span>
-              <span className="font-medium text-slate-800">{meuProfile?.nome || "—"}</span>
+              <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500 w-32 shrink-0">
+                Nome
+              </span>
+              <span className="font-medium text-slate-800">
+                {meuProfile?.nome || "—"}
+              </span>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
 
-      <SyncStatus logs={(syncLogs || []) as SyncLog[]} />
+      <div>
+        <SectionHeader
+          icon={<RefreshCw className="h-4 w-4" />}
+          title="Sincronização"
+          subtitle="Histórico de syncs com Google Sheets e Chatwoot"
+        />
+        <SyncStatus logs={(syncLogs || []) as SyncLog[]} />
+      </div>
 
       {isSuperAdmin && (
-        <GerenciarUsuarios usuarios={(usuarios || []) as Usuario[]} />
+        <div>
+          <SectionHeader
+            icon={<Users className="h-4 w-4" />}
+            title="Gerenciar usuários"
+            subtitle="Apenas Super Admins"
+          />
+          <GerenciarUsuarios usuarios={(usuarios || []) as Usuario[]} />
+        </div>
       )}
 
       {!isSuperAdmin && (
@@ -89,6 +119,6 @@ export default async function ConfiguracoesPage() {
           </CardHeader>
         </Card>
       )}
-    </div>
+    </>
   );
 }

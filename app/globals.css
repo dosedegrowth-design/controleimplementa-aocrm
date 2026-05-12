@@ -9,13 +9,18 @@
   --font-sans: 'Inter', sans-serif;
   --font-mono: var(--font-geist-mono);
 
-  /* Brand SuperVisão */
+  /* Brand SuperVisão — alinhado com dash-supervisao */
   --color-brand-navy: #1B2A4A;
+  --color-brand-navy-2: #2D4373;
+  --color-brand-navy-3: #4A6BAB;
+  --color-brand-navy-4: #7A95C7;
   --color-brand-navy-light: #243556;
   --color-brand-navy-dark: #111D35;
   --color-brand-red: #E31E24;
   --color-brand-red-light: #FF3B3F;
   --color-brand-red-dark: #C41A1F;
+  --color-brand-amber: #F59E0B;
+  --color-brand-emerald: #16A34A;
 
   /* Sidebar */
   --color-sidebar-ring: var(--sidebar-ring);
@@ -153,4 +158,63 @@
 }
 .kanban-scroll-x::-webkit-scrollbar-thumb:hover {
   background: #94A3B8;
+}
+
+/* ============================================================
+   Design tokens compartilhados com dash-supervisao
+   ============================================================ */
+
+/* Numeros sempre tabulares (evita "vibracao" em KPIs) */
+.tabular-num,
+.tabular-nums,
+[data-tabular="true"] {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Hero gradient da marca */
+.hero-gradient {
+  background: linear-gradient(135deg, #1B2A4A 0%, #2D4373 50%, #4A6BAB 100%);
+}
+
+/* Tabela padrao SuperVisao */
+.spv-table {
+  width: 100%;
+  font-size: 0.875rem;
+}
+.spv-table thead tr {
+  background: linear-gradient(to right, #1B2A4A, #2D4373);
+}
+.spv-table thead th {
+  color: white;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.75rem 1rem;
+  text-align: left;
+}
+.spv-table tbody tr {
+  border-bottom: 1px solid #e5e7eb;
+  transition: background 120ms;
+}
+.spv-table tbody tr:nth-child(even) {
+  background: #F9FAFB;
+}
+.spv-table tbody tr:hover {
+  background: #F1F5F9;
+}
+.spv-table tbody td {
+  padding: 0.75rem 1rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Safe area iOS / mobile dynamic viewport */
+@utility pb-safe { padding-bottom: max(env(safe-area-inset-bottom), 0.5rem); }
+@utility pt-safe { padding-top: max(env(safe-area-inset-top), 0.5rem); }
+@utility h-dvh { height: 100dvh; height: 100vh; }
+@utility min-h-dvh { min-height: 100dvh; min-height: 100vh; }
+
+/* Touch target mínimo */
+@media (hover: none) and (pointer: coarse) {
+  .touch-target { min-height: 44px; min-width: 44px; }
 }
